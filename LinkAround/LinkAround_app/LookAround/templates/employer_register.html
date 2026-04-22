@@ -1,0 +1,53 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Employer Registration{% endblock %}
+
+{% block content %}
+<section class="card bg-base-100 border border-base-300 shadow-sm max-w-3xl mx-auto">
+    <div class="card-body">
+        <h1 class="card-title text-2xl">Employer Registration</h1>
+        <p class="text-base-content/70">Set business coverage fields to unlock matching portfolios.</p>
+
+        <form method="post" class="space-y-4 mt-2">
+            {% csrf_token %}
+
+            <label class="form-control w-full">
+                <span class="label-text">Company name</span>
+                {{ form.company_name }}
+            </label>
+
+            <label class="form-control w-full">
+                <span class="label-text">Contact person</span>
+                {{ form.contact_person }}
+            </label>
+
+            <label class="form-control w-full">
+                <span class="label-text">Email</span>
+                {{ form.email }}
+            </label>
+
+            <label class="form-control w-full">
+                <span class="label-text">Location</span>
+                {{ form.location }}
+            </label>
+
+            <fieldset class="fieldset bg-base-200 border border-base-300 rounded-box p-4">
+                <legend class="fieldset-legend">Business fields covered</legend>
+                <div class="space-y-2">
+                    {{ form.business_fields }}
+                </div>
+            </fieldset>
+
+            {% if form.errors %}
+                <div class="alert alert-error">
+                    <span>Please review the form fields and try again.</span>
+                </div>
+            {% endif %}
+
+            <div class="card-actions justify-end">
+                <button type="submit" class="btn btn-primary">Submit Employer Profile</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

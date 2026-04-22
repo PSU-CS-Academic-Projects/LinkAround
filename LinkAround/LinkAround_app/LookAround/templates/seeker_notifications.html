@@ -1,0 +1,40 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Seeker Notifications{% endblock %}
+
+{% block content %}
+<section class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 class="card-title text-2xl">Notifications for {{ seeker.full_name }}</h1>
+            <p class="text-base-content/70">Updates from employers who shortlisted your portfolio.</p>
+        </div>
+        <a href="{% url 'seeker_list' %}" class="btn btn-outline">Back to portfolio cards</a>
+    </div>
+</section>
+
+<section class="space-y-3 mt-6">
+    {% for notification in notifications %}
+        <article class="card {% if not notification.is_read %}bg-info/10{% else %}bg-base-100{% endif %} border border-base-300 shadow-sm">
+            <div class="card-body">
+                <p class="text-sm text-base-content/70">{{ notification.created_at }}</p>
+                <p>{{ notification.message }}</p>
+                <p class="text-sm text-base-content/70">Employer: {{ notification.shortlist.employer.company_name }}</p>
+                {% if not notification.is_read %}
+                    <form method="post" action="{% url 'mark_notification_read' notification.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-primary">Mark as read</button>
+                    </form>
+                {% endif %}
+            </div>
+        </article>
+    {% empty %}
+        <article class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title">No notifications yet</h2>
+                <p>Your updates will appear here when employers shortlist your portfolio.</p>
+            </div>
+        </article>
+    {% endfor %}
+</section>
+{% endblock %}

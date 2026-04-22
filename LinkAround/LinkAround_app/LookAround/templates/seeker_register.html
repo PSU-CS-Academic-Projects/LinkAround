@@ -1,0 +1,61 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Seeker Registration{% endblock %}
+
+{% block content %}
+<section class="card bg-base-100 border border-base-300 shadow-sm max-w-3xl mx-auto">
+    <div class="card-body">
+        <h1 class="card-title text-2xl">Job Seeker Registration</h1>
+        <p class="text-base-content/70">Provide your profile and upload a portfolio file for employers to review.</p>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-4 mt-2">
+            {% csrf_token %}
+
+            <label class="form-control w-full">
+                <span class="label-text">Full name</span>
+                {{ form.full_name }}
+            </label>
+
+            <label class="form-control w-full">
+                <span class="label-text">Email</span>
+                {{ form.email }}
+            </label>
+
+            <label class="form-control w-full">
+                <span class="label-text">Degree</span>
+                {{ form.degree }}
+            </label>
+
+            <label class="form-control w-full">
+                <span class="label-text">Location</span>
+                {{ form.location }}
+            </label>
+
+            <label class="form-control w-full">
+                <span class="label-text">Preferred field</span>
+                {{ form.preferred_field }}
+            </label>
+
+            <label class="form-control w-full">
+                <span class="label-text">Short bio</span>
+                {{ form.bio }}
+            </label>
+
+            <label class="form-control w-full">
+                <span class="label-text">Portfolio file</span>
+                {{ form.portfolio_file }}
+            </label>
+
+            {% if form.errors %}
+                <div class="alert alert-error">
+                    <span>Please review the form fields and try again.</span>
+                </div>
+            {% endif %}
+
+            <div class="card-actions justify-end">
+                <button type="submit" class="btn btn-primary">Submit Seeker Profile</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

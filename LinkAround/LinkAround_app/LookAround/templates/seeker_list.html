@@ -1,0 +1,70 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Portfolio Cards{% endblock %}
+
+{% block content %}
+<section class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body">
+        <h1 class="card-title text-2xl">Portfolio Database</h1>
+        <form method="get" class="grid gap-3 md:grid-cols-4 mt-2">
+            <input type="text" name="q" value="{{ selected_keyword }}" placeholder="Search by name, degree, bio" class="input input-bordered w-full" />
+            <input type="text" name="location" value="{{ selected_location }}" placeholder="Location" class="input input-bordered w-full" />
+            <select name="field" class="select select-bordered w-full">
+                <option value="">All fields</option>
+                {% for field in fields %}
+                    <option value="{{ field.id }}" {% if selected_field == field.id|stringformat:'s' %}selected{% endif %}>{{ field.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+</section>
+
+<section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 mt-6">
+    {% for seeker in seekers %}
+        <article class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body">
+                <div class="flex justify-between items-start gap-2">
+                    <h2 class="card-title">{{ seeker.full_name }}</h2>
+                    <span class="badge badge-outline">{{ seeker.preferred_field.name }}</span>
+                </div>
+                <p class="text-sm text-base-content/70">{{ seeker.degree }} · {{ seeker.location }}</p>
+                <p class="text-sm">{{ seeker.bio|default:'No bio provided yet.' }}</p>
+
+                <div class="pt-2">
+                    <a href="{{ seeker.portfolio_file.url }}" class="link link-primary text-sm" target="_blank">Download portfolio</a>
+                    <a href="{% url 'seeker_notifications' seeker.id %}" class="link link-secondary text-sm ml-4">View seeker notifications</a>
+                </div>
+
+                {% if employers %}
+                    <form method="post" action="{% url 'add_to_shortlist' seeker.id %}" class="space-y-2 pt-2">
+                        {% csrf_token %}
+                        <select name="employer_id" class="select select-bordered w-full" required>
+                            <option value="">Select employer profile</option>
+                            {% for employer in employers %}
+                                <option value="{{ employer.id }}" {% if selected_employer_id == employer.id|stringformat:'s' %}selected{% endif %}>{{ employer.company_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <textarea name="notes" class="textarea textarea-bordered w-full" placeholder="Optional shortlist note"></textarea>
+                        <div class="card-actions justify-between">
+                            <button type="submit" class="btn btn-primary btn-sm">Add to shortlist</button>
+                            <span class="text-xs text-base-content/60">Notifies seeker automatically</span>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-warning mt-2 text-sm">
+                        <span>Create an employer profile first to enable shortlisting.</span>
+                    </div>
+                {% endif %}
+            </div>
+        </article>
+    {% empty %}
+        <article class="card bg-base-100 border border-base-300 shadow-sm md:col-span-2 xl:col-span-3">
+            <div class="card-body">
+                <h2 class="card-title">No seekers found</h2>
+                <p>Try adjusting the filters or ask seekers to register their portfolio profiles.</p>
+            </div>
+        </article>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -119,3 +119,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# django-tailwind configuration
+TAILWIND_APP_NAME = 'LookAround'
+
+# Helpful for local development integrations such as browser reload.
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
+
+NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

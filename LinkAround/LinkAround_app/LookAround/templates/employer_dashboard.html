@@ -1,0 +1,39 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Employer Dashboard{% endblock %}
+
+{% block content %}
+<section class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body md:flex-row md:items-center md:justify-between">
+        <div>
+            <h1 class="card-title text-2xl">{{ employer.company_name }} Shortlist</h1>
+            <p class="text-base-content/70">Private folder of selected seekers for easier navigation.</p>
+        </div>
+        <a href="{% url 'seeker_list' %}?employer_id={{ employer.id }}" class="btn btn-outline">Browse more seekers</a>
+    </div>
+</section>
+
+<section class="grid gap-4 md:grid-cols-2 mt-6">
+    {% for item in shortlists %}
+        <article class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title">{{ item.seeker.full_name }}</h2>
+                <p class="text-sm text-base-content/70">{{ item.seeker.degree }} · {{ item.seeker.location }}</p>
+                <p class="text-sm"><strong>Field:</strong> {{ item.seeker.preferred_field.name }}</p>
+                <p class="text-sm"><strong>Note:</strong> {{ item.notes|default:'No notes yet.' }}</p>
+                <div class="card-actions justify-between pt-2">
+                    <a href="{{ item.seeker.portfolio_file.url }}" target="_blank" class="btn btn-sm btn-primary">Download portfolio</a>
+                    <a href="{% url 'seeker_notifications' item.seeker.id %}" class="btn btn-sm btn-ghost">Open seeker notifications</a>
+                </div>
+            </div>
+        </article>
+    {% empty %}
+        <article class="card bg-base-100 border border-base-300 shadow-sm md:col-span-2">
+            <div class="card-body">
+                <h2 class="card-title">No shortlisted profiles yet</h2>
+                <p>Go to portfolio cards and add seekers into your private shortlist.</p>
+            </div>
+        </article>
+    {% endfor %}
+</section>
+{% endblock %}

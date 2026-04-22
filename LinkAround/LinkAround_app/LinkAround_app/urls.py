@@ -14,9 +14,39 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
+from LinkAround_main import views as main_views
 
 urlpatterns = [
+    path('', main_views.home, name='home'),
+    path('seeker/register/', main_views.seeker_register, name='seeker_register'),
+    path('employer/register/', main_views.employer_register, name='employer_register'),
+    path('seekers/', main_views.seeker_list, name='seeker_list'),
+    path(
+        'shortlist/<int:seeker_id>/add/',
+        main_views.add_to_shortlist,
+        name='add_to_shortlist',
+    ),
+    path(
+        'employer/<int:employer_id>/dashboard/',
+        main_views.employer_dashboard,
+        name='employer_dashboard',
+    ),
+    path(
+        'seeker/<int:seeker_id>/notifications/',
+        main_views.seeker_notifications,
+        name='seeker_notifications',
+    ),
+    path(
+        'notification/<int:notification_id>/read/',
+        main_views.mark_notification_read,
+        name='mark_notification_read',
+    ),
     path('admin/', admin.site.urls),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

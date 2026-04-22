@@ -1,0 +1,66 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Home{% endblock %}
+
+{% block content %}
+<section class="bg-base-100 rounded-box shadow-sm border border-base-300 p-8 md:p-10">
+    <p class="badge badge-outline">Online Seekers and Employers Portfolio Site</p>
+    <h1 class="text-3xl md:text-5xl font-bold mt-3">Card-based platform for talent and hiring teams</h1>
+    <p class="mt-4 text-base-content/70 max-w-3xl">
+        Register as a seeker to submit your portfolio, or as an employer to discover candidates by field and location.
+        Built for faster matching and cleaner portfolio management.
+    </p>
+</section>
+
+<section class="grid md:grid-cols-3 gap-4 mt-6">
+    <article class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body">
+            <p class="text-sm text-base-content/70">Registered seekers</p>
+            <p class="text-3xl font-bold">{{ seeker_count }}</p>
+        </div>
+    </article>
+    <article class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body">
+            <p class="text-sm text-base-content/70">Registered employers</p>
+            <p class="text-3xl font-bold">{{ employer_count }}</p>
+        </div>
+    </article>
+    <article class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body">
+            <p class="text-sm text-base-content/70">Available fields</p>
+            <p class="text-3xl font-bold">{{ field_count }}</p>
+        </div>
+    </article>
+</section>
+
+<section class="grid md:grid-cols-2 gap-4 mt-6">
+    <article class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title">For Job Seekers</h2>
+            <p class="text-base-content/70">Submit profile details, degree, and portfolio file into a categorized talent pool.</p>
+            <div class="card-actions justify-end">
+                <a href="{% url 'seeker_register' %}" class="btn btn-primary">Create Seeker Profile</a>
+            </div>
+        </div>
+    </article>
+    <article class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title">For Employers</h2>
+            <p class="text-base-content/70">Register company profile, choose business fields, and shortlist promising candidates.</p>
+            <div class="card-actions justify-end">
+                <a href="{% url 'employer_register' %}" class="btn btn-primary">Create Employer Profile</a>
+            </div>
+        </div>
+    </article>
+</section>
+
+<section class="mt-6 card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body md:flex-row md:items-center md:justify-between">
+        <div>
+            <h3 class="card-title">Browse candidate portfolios</h3>
+            <p class="text-base-content/70">Filter by degree field and location, then add to private employer shortlist.</p>
+        </div>
+        <a href="{% url 'seeker_list' %}" class="btn btn-outline">Open Portfolio Cards</a>
+    </div>
+</section>
+{% endblock %}

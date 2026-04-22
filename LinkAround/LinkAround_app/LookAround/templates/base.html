@@ -1,26 +1,122 @@
 {% load static tailwind_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="corporate">
 <head>
-    <title>Django Tailwind</title>
+    <title>LinkAround | Corporate Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     {% tailwind_css %}
 </head>
 
-<body class="bg-gray-50 text-black font-serif leading-normal tracking-normal">
-
-    <div class="toast toast-top toast-end">
-        <div class="alert alert-info">
-            <span>Hello from daisyUi 👋</span>
+<body class="min-h-screen bg-base-200 text-base-content">
+    <header class="navbar bg-base-100 shadow-sm border-b border-base-300">
+        <div class="navbar-start">
+            <a class="btn btn-ghost normal-case text-lg font-semibold">LinkAround</a>
         </div>
-    </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1 text-sm">
+                <li><a>Home</a></li>
+                <li><a>Job Seekers</a></li>
+                <li><a>Employers</a></li>
+            </ul>
+        </div>
+        <div class="navbar-end gap-2">
+            <button class="btn btn-ghost btn-sm">Help Center</button>
+            <button class="btn btn-primary btn-sm">Log In</button>
+        </div>
+    </header>
 
-<div class="container mx-auto">
-    <section class="flex items-center justify-center h-screen">
-        <h1 class="text-5xl">Django + Tailwind = ❤️</h1>
-    </section>
-</div>
+    <main class="max-w-6xl mx-auto px-4 py-10">
+        <section class="bg-base-100 rounded-box shadow-sm border border-base-300 p-8 md:p-12">
+            <div class="max-w-3xl space-y-4">
+                <p class="badge badge-outline">Final Project Prototype</p>
+                <h1 class="text-4xl md:text-5xl font-bold">Find Opportunities. Discover Talent.</h1>
+                <p class="text-base-content/70 text-lg">
+                    LinkAround connects job seekers and employers through organized portfolio cards, field-based filtering,
+                    and location-aware search.
+                </p>
+            </div>
+        </section>
+
+        <section class="mt-6 grid gap-4 md:grid-cols-2">
+            <article class="card bg-base-100 shadow-sm border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title">I am a Job Seeker</h2>
+                    <p class="text-base-content/70">
+                        Build your profile, upload your portfolio, and get matched into field-specific listings that employers browse.
+                    </p>
+                    <ul class="space-y-2 text-sm text-base-content/70">
+                        <li>Profile and degree details</li>
+                        <li>Checklist aligned to your field</li>
+                        <li>Portfolio grouped by specialization</li>
+                    </ul>
+                    <div class="card-actions justify-end pt-2">
+                        <button class="btn btn-primary">Start as Seeker</button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="card bg-base-100 shadow-sm border border-base-300">
+                <div class="card-body">
+                    <h2 class="card-title">I am an Employer</h2>
+                    <p class="text-base-content/70">
+                        Select business fields, browse candidate portfolio cards, then save top profiles into your private shortlist.
+                    </p>
+                    <ul class="space-y-2 text-sm text-base-content/70">
+                        <li>Field-based portfolio discovery</li>
+                        <li>Private shortlist for selected profiles</li>
+                        <li>Direct download of candidate portfolios</li>
+                    </ul>
+                    <div class="card-actions justify-end pt-2">
+                        <button class="btn btn-primary">Start as Employer</button>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="mt-6">
+            <h3 class="text-xl font-semibold mb-4">Core Platform Functions</h3>
+            <div class="grid gap-4 md:grid-cols-3">
+                <article class="card bg-base-100 shadow-sm border border-base-300">
+                    <div class="card-body">
+                        <h4 class="card-title text-lg">Notification System</h4>
+                        <p class="text-base-content/70 text-sm">
+                            Job seekers receive updates when an employer picks their portfolio and moves them into a private folder.
+                        </p>
+                    </div>
+                </article>
+                <article class="card bg-base-100 shadow-sm border border-base-300">
+                    <div class="card-body">
+                        <h4 class="card-title text-lg">Field-Based Database</h4>
+                        <p class="text-base-content/70 text-sm">
+                            Portfolios are grouped by specialization or degree to make screening easier for employers.
+                        </p>
+                    </div>
+                </article>
+                <article class="card bg-base-100 shadow-sm border border-base-300">
+                    <div class="card-body">
+                        <h4 class="card-title text-lg">Location Filter</h4>
+                        <p class="text-base-content/70 text-sm">
+                            Employers can filter candidates by area for onsite, hybrid, or remote opportunities.
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="mt-6 card bg-primary text-primary-content shadow-sm">
+            <div class="card-body md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h3 class="card-title text-2xl">Ready to use the platform?</h3>
+                    <p class="opacity-90">Choose your role and continue to your personalized flow.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="btn btn-neutral">Seeker Portal</button>
+                    <button class="btn btn-outline btn-accent">Employer Portal</button>
+                </div>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

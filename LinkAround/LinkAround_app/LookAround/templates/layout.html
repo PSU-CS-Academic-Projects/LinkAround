@@ -1,0 +1,64 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LinkAround{% endblock %}</title>
+    {% tailwind_css %}
+</head>
+<body class="min-h-screen bg-base-200 text-base-content">
+    <header class="navbar bg-base-100 shadow-sm border-b border-base-300 px-4 lg:px-8">
+        <div class="navbar-start">
+            <a href="{% url 'home' %}" class="btn btn-ghost text-lg font-semibold">LinkAround</a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+            <ul class="menu menu-horizontal px-1 text-sm">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'seeker_register' %}">For Seekers</a></li>
+                <li><a href="{% url 'employer_register' %}">For Employers</a></li>
+                <li><a href="{% url 'seeker_list' %}">Browse Portfolios</a></li>
+            </ul>
+        </div>
+        <div class="navbar-end gap-2">
+            <label class="swap swap-rotate btn btn-ghost btn-sm" title="Toggle dark mode">
+                <input id="theme-toggle" type="checkbox" />
+                <svg class="swap-off h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 16a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1Zm10-6a1 1 0 0 1-1 1h-2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1ZM5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1Zm12.95-6.364a1 1 0 0 1 0 1.414l-1.414 1.415a1 1 0 0 1-1.414-1.415l1.414-1.414a1 1 0 0 1 1.414 0ZM8.879 15.707a1 1 0 0 1 0 1.415L7.464 18.536a1 1 0 1 1-1.414-1.414l1.415-1.415a1 1 0 0 1 1.414 0Zm8.657 2.829a1 1 0 0 1-1.414 0l-1.415-1.414a1 1 0 1 1 1.415-1.415l1.414 1.415a1 1 0 0 1 0 1.414ZM8.879 8.293a1 1 0 0 1-1.414 0L6.05 6.879A1 1 0 0 1 7.464 5.464L8.88 6.88a1 1 0 0 1 0 1.414ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"/></svg>
+                <svg class="swap-on h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8 8 0 0 1-10.45-10.45 1 1 0 0 0-1.2-1.34 10 10 0 1 0 12.84 12.84 1 1 0 0 0-.14-1.05Z"/></svg>
+            </label>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        {% if messages %}
+            <div class="space-y-2 mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-info shadow-sm">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        (function () {
+            const html = document.documentElement;
+            const toggle = document.getElementById('theme-toggle');
+            const savedTheme = localStorage.getItem('linkaround-theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initialTheme = savedTheme || (prefersDark ? 'dark' : 'corporate');
+
+            html.setAttribute('data-theme', initialTheme);
+            if (toggle) {
+                toggle.checked = initialTheme === 'dark';
+                toggle.addEventListener('change', function () {
+                    const nextTheme = toggle.checked ? 'dark' : 'corporate';
+                    html.setAttribute('data-theme', nextTheme);
+                    localStorage.setItem('linkaround-theme', nextTheme);
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
