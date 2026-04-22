@@ -56,34 +56,43 @@ When an employer shortlists a seeker, the seeker receives a system notification 
 
 ## Setup Instructions (Windows)
 
-1. Open terminal in LinkAround_app
+1. Open terminal in the project root (`LinkAround`), then go to the Django app folder
 
-2. Use the project virtual environment Python
+	 cd LinkAround_app
 
-	 C:\Users\Hawksprey\source\repos\LinkAround\LinkAround\LinkAround\Scripts\python.exe -m pip install -r ..\requirements.txt
+2. Activate virtual environment (recommended)
 
-3. Run migrations
+	 ..\LinkAround\Scripts\Activate.ps1
 
-	 C:\Users\Hawksprey\source\repos\LinkAround\LinkAround\LinkAround\Scripts\python.exe manage.py makemigrations
-	 C:\Users\Hawksprey\source\repos\LinkAround\LinkAround\LinkAround\Scripts\python.exe manage.py migrate
+	If activation is blocked by PowerShell policy, use the venv python directly:
 
-4. Build Tailwind assets
+	 ..\LinkAround\Scripts\python.exe -m pip --version
+
+3. Install Python dependencies
+
+	 python -m pip install -r ..\requirements.txt
+
+4. Run migrations
+
+	 python manage.py makemigrations
+	 python manage.py migrate
+
+5. Build Tailwind assets
 
 	 cd LookAround\static_src
 	 npm install
 	 npm run build
+	 cd ..\..
 
-5. Start Tailwind watcher (terminal 1)
+6. Start Tailwind watcher (terminal 1)
 
-	 cd C:\Users\Hawksprey\source\repos\LinkAround\LinkAround\LinkAround_app
-	 C:\Users\Hawksprey\source\repos\LinkAround\LinkAround\LinkAround\Scripts\python.exe manage.py tailwind start
+	 python manage.py tailwind start
 
-6. Start Django server (terminal 2)
+7. Start Django server (terminal 2)
 
-	 cd C:\Users\Hawksprey\source\repos\LinkAround\LinkAround\LinkAround_app
-	 C:\Users\Hawksprey\source\repos\LinkAround\LinkAround\LinkAround\Scripts\python.exe manage.py runserver 8080
+	 python manage.py runserver 8080
 
-7. Open in browser
+8. Open in browser
 
 	 http://127.0.0.1:8080/
 
