@@ -21,9 +21,14 @@
             </ul>
         </div>
         <div class="navbar-end gap-2">
-            <label class="swap swap-rotate btn btn-ghost btn-sm" title="Toggle dark mode">
+            <select id="theme-mode" class="select select-bordered select-sm" title="Choose theme mode">
+                <option value="system">System</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+            </select>
+            <label class="swap swap-rotate btn btn-ghost btn-sm" title="Quick toggle between light and dark">
                 <input id="theme-toggle" type="checkbox" />
-                <svg class="swap-off h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 16a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1Zm10-6a1 1 0 0 1-1 1h-2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1ZM5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1Zm12.95-6.364a1 1 0 0 1 0 1.414l-1.414 1.415a1 1 0 0 1-1.414-1.415l1.414-1.414a1 1 0 0 1 1.414 0ZM8.879 15.707a1 1 0 0 1 0 1.415L7.464 18.536a1 1 0 1 1-1.414-1.414l1.415-1.415a1 1 0 0 1 1.414 0Zm8.657 2.829a1 1 0 0 1-1.414 0l-1.415-1.414a1 1 0 1 1 1.415-1.415l1.414 1.415a1 1 0 0 1 0 1.414ZM8.879 8.293a1 1 0 0 1-1.414 0L6.05 6.879A1 1 0 0 1 7.464 5.464L8.88 6.88a1 1 0 0 1 0 1.414ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"/></svg>
+                <svg class="swap-off h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 16a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1Zm10-6a1 1 0 0 1-1 1h-2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1ZM5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"/></svg>
                 <svg class="swap-on h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8 8 0 0 1-10.45-10.45 1 1 0 0 0-1.2-1.34 10 10 0 1 0 12.84 12.84 1 1 0 0 0-.14-1.05Z"/></svg>
             </label>
         </div>
@@ -44,20 +49,61 @@
     <script>
         (function () {
             const html = document.documentElement;
+            const modeSelect = document.getElementById('theme-mode');
             const toggle = document.getElementById('theme-toggle');
-            const savedTheme = localStorage.getItem('linkaround-theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const initialTheme = savedTheme || (prefersDark ? 'dark' : 'corporate');
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            const THEME_MODE_KEY = 'linkaround-theme-mode';
 
-            html.setAttribute('data-theme', initialTheme);
-            if (toggle) {
-                toggle.checked = initialTheme === 'dark';
-                toggle.addEventListener('change', function () {
-                    const nextTheme = toggle.checked ? 'dark' : 'corporate';
-                    html.setAttribute('data-theme', nextTheme);
-                    localStorage.setItem('linkaround-theme', nextTheme);
+            function resolveTheme(mode) {
+                if (mode === 'dark') {
+                    return 'dark';
+                }
+                if (mode === 'light') {
+                    return 'corporate';
+                }
+                return mediaQuery.matches ? 'dark' : 'corporate';
+            }
+
+            function applyTheme(mode) {
+                const resolvedTheme = resolveTheme(mode);
+                html.setAttribute('data-theme', resolvedTheme);
+
+                if (toggle) {
+                    toggle.checked = resolvedTheme === 'dark';
+                }
+
+                if (modeSelect) {
+                    modeSelect.value = mode;
+                }
+            }
+
+            function setMode(mode) {
+                localStorage.setItem(THEME_MODE_KEY, mode);
+                applyTheme(mode);
+            }
+
+            const initialMode = localStorage.getItem(THEME_MODE_KEY) || 'system';
+            applyTheme(initialMode);
+
+            if (modeSelect) {
+                modeSelect.addEventListener('change', function () {
+                    setMode(modeSelect.value);
                 });
             }
+
+            if (toggle) {
+                toggle.addEventListener('change', function () {
+                    const nextMode = toggle.checked ? 'dark' : 'light';
+                    setMode(nextMode);
+                });
+            }
+
+            mediaQuery.addEventListener('change', function () {
+                const mode = localStorage.getItem(THEME_MODE_KEY) || 'system';
+                if (mode === 'system') {
+                    applyTheme('system');
+                }
+            });
         })();
     </script>
 </body>
