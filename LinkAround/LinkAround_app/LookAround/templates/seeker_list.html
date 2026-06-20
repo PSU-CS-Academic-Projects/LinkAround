@@ -59,7 +59,7 @@
                 </optgroup>
             {% endfor %}
         </select>
-        <select name="sort" class="la-select">
+        <select name="sort" class="la-select js-auto-submit" title="Sort results" aria-label="Sort results">
             <option value="new" {% if selected_sort == 'new' %}selected{% endif %}>Newest first</option>
             <option value="old" {% if selected_sort == 'old' %}selected{% endif %}>Oldest first</option>
             <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>Name A–Z</option>

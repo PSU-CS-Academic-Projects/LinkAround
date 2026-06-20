@@ -1013,23 +1013,27 @@
   }
 
   .la-drive-folder {
-    @apply flex items-center gap-3 rounded-xl border border-brand-100 bg-[#f6f7ff] px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md;
+    @apply flex flex-col items-stretch gap-3 rounded-2xl border border-brand-100 bg-white px-4 pt-5 pb-3 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-md;
   }
 
   .la-drive-folder-active {
-    @apply border-primary bg-brand-100;
+    @apply border-primary bg-brand-50 ring-2 ring-primary/30;
   }
 
   .la-drive-folder-icon {
-    @apply grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700;
+    @apply mx-auto grid h-16 w-20 place-items-center rounded-lg bg-amber-100 text-amber-600;
   }
 
   .la-drive-folder-active .la-drive-folder-icon {
-    @apply bg-white text-brand-700;
+    @apply bg-amber-200 text-amber-700;
+  }
+
+  .la-drive-folder-body {
+    @apply mt-1 border-t border-brand-100 pt-2 text-center;
   }
 
   .la-drive-folder-name {
-    @apply block truncate font-semibold text-brand-700;
+    @apply block truncate font-semibold text-gray-900;
   }
 
   .la-drive-folder-count {
@@ -1041,15 +1045,19 @@
   }
 
   body.la-dark .la-drive-folder-active {
-    @apply border-brand-400 bg-[#241f4a];
+    @apply border-brand-400 bg-[#241f4a] ring-brand-400/30;
   }
 
   body.la-dark .la-drive-folder-icon {
-    @apply bg-white/5 text-brand-300;
+    @apply bg-amber-500/20 text-amber-300;
   }
 
   body.la-dark .la-drive-folder-name {
-    @apply text-brand-200;
+    @apply text-gray-100;
+  }
+
+  body.la-dark .la-drive-folder-body {
+    @apply border-[#2a2c4d];
   }
 
   body.la-dark main {

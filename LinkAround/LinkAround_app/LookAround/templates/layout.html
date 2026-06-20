@@ -168,6 +168,7 @@
                                 <ul class="mb-6 flex flex-col gap-2">
                                     {% if employer_profile %}
                                         <li><a href="{% url 'employer_dashboard' employer_profile.id %}" class="menu-item {% if current_url == 'employer_dashboard' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Shortlist folder</a></li>
+                                        <li><a href="{% url 'employer_covered_fields' employer_profile.id %}" class="menu-item {% if current_url == 'employer_covered_fields' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Covered fields</a></li>
                                         <li><a href="{% url 'employer_edit' %}" class="menu-item {% if current_url == 'employer_edit' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Company profile</a></li>
                                     {% else %}
                                         <li><a href="{% url 'employer_register' %}" class="menu-item {% if current_url == 'employer_register' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Setup company</a></li>
@@ -222,14 +223,14 @@
                             LinkAround
                         </a>
 
-                        <form action="{% url 'seeker_list' %}" method="get" class="hidden md:block">
+                        <form action="{% url 'seeker_list' %}" method="get" class="block w-full md:w-auto">
                             <div class="la-search xl:w-full xl:max-w-[430px]">
                                 <span class="la-search-icon">
                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"></path>
                                     </svg>
                                 </span>
-                                <input id="topbar-search" name="q" type="search" placeholder="Search portfolios..." class="la-search-input" aria-label="Search portfolios">
+                                <input id="topbar-search" name="q" type="search" value="{{ selected_keyword|default:'' }}" placeholder="Search portfolios..." class="la-search-input" aria-label="Search portfolios">
                                 <kbd class="la-search-kbd">/</kbd>
                             </div>
                         </form>
@@ -237,11 +238,25 @@
 
                     <div class="flex w-full items-center justify-between gap-4 px-5 py-4 shadow-theme-sm lg:w-auto lg:justify-end lg:px-0 lg:shadow-none">
                         <div class="flex items-center gap-2">
-                            <a href="{% if is_admin %}{% url 'admin_dashboard' %}{% elif employer_profile %}{% url 'employer_dashboard' employer_profile.id %}{% elif is_employer %}{% url 'employer_register' %}{% elif seeker_profile %}{% url 'seeker_edit' %}{% elif is_seeker %}{% url 'seeker_register' %}{% elif needs_role %}{% url 'choose_role' %}{% else %}{% url 'account_register' %}{% endif %}" class="tailadmin-header-btn" title="{% if is_admin %}Open admin dashboard{% elif employer_profile %}Open shortlist folders{% elif is_employer %}Set up company{% elif seeker_profile %}Update your portfolio{% elif is_seeker %}Create your portfolio{% else %}Create account{% endif %}" aria-label="{% if is_admin %}Open admin dashboard{% elif employer_profile %}Open shortlist folders{% elif is_employer %}Set up company{% elif seeker_profile %}Update your portfolio{% elif is_seeker %}Create your portfolio{% else %}Create account{% endif %}">
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
-                                </svg>
-                            </a>
+                            {% if employer_profile %}
+                                <a href="{% url 'employer_dashboard' employer_profile.id %}" class="tailadmin-header-btn" title="Open shortlist folders" aria-label="Open shortlist folders">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7S3.73 16.06 2.46 12Z"></path>
+                                    </svg>
+                                </a>
+                                <button type="button" id="header-new-folder-btn" class="tailadmin-header-btn" title="Create folder" aria-label="Create folder" aria-haspopup="dialog">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
+                                    </svg>
+                                </button>
+                            {% else %}
+                                <a href="{% if is_admin %}{% url 'admin_dashboard' %}{% elif is_employer %}{% url 'employer_register' %}{% elif seeker_profile %}{% url 'seeker_edit' %}{% elif is_seeker %}{% url 'seeker_register' %}{% elif needs_role %}{% url 'choose_role' %}{% else %}{% url 'account_register' %}{% endif %}" class="tailadmin-header-btn" title="{% if is_admin %}Open admin dashboard{% elif is_employer %}Set up company{% elif seeker_profile %}Update your portfolio{% elif is_seeker %}Create your portfolio{% else %}Create account{% endif %}" aria-label="{% if is_admin %}Open admin dashboard{% elif is_employer %}Set up company{% elif seeker_profile %}Update your portfolio{% elif is_seeker %}Create your portfolio{% else %}Create account{% endif %}">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
+                                    </svg>
+                                </a>
+                            {% endif %}
                             <button id="theme-toggle" type="button" class="tailadmin-header-btn w-auto gap-2 px-3" title="Cycle theme mode" aria-label="Cycle theme mode">
                                 <svg id="theme-light-icon" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"></path></svg>
                                 <svg id="theme-dark-icon" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M21 14.79A9 9 0 0 1 9.21 3 7 7 0 1 0 21 14.79Z"></path></svg>
@@ -307,6 +322,34 @@
         </div>
     </div>
     {% endwith %}
+
+    {% if employer_profile %}
+        <div id="header-new-folder-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900/50 p-4" role="dialog" aria-modal="true" aria-labelledby="header-new-folder-title">
+            <div class="w-full max-w-md rounded-2xl border border-brand-100 bg-white p-6 shadow-theme-lg">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="la-eyebrow">Shortlist</p>
+                        <h2 id="header-new-folder-title" class="la-card-title mt-1">Create folder</h2>
+                        <p class="la-muted mt-1">Group saved candidates by role, batch, or priority.</p>
+                    </div>
+                    <button type="button" id="header-new-folder-close" class="tailadmin-header-btn" title="Close" aria-label="Close create folder">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 6l12 12M6 18 18 6"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form method="post" action="{% url 'create_folder' employer_profile.id %}" class="mt-5 space-y-3">
+                    {% csrf_token %}
+                    <label for="header-new-folder-input" class="block text-sm font-medium text-gray-700">Folder name</label>
+                    <input id="header-new-folder-input" type="text" name="name" required maxlength="100" placeholder="e.g. Senior designers" class="la-input">
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" id="header-new-folder-cancel" class="la-button-secondary">Cancel</button>
+                        <button type="submit" class="la-button-primary">Create folder</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
 
     <script>
         (function () {
@@ -433,6 +476,47 @@
                     }
                 });
             }
+
+            var newFolderBtn = document.getElementById('header-new-folder-btn');
+            var newFolderModal = document.getElementById('header-new-folder-modal');
+            var newFolderClose = document.getElementById('header-new-folder-close');
+            var newFolderCancel = document.getElementById('header-new-folder-cancel');
+            var newFolderInput = document.getElementById('header-new-folder-input');
+
+            function openNewFolderModal() {
+                if (!newFolderModal) return;
+                newFolderModal.classList.remove('hidden');
+                newFolderModal.classList.add('flex');
+                if (newFolderInput) setTimeout(function () { newFolderInput.focus(); }, 0);
+            }
+
+            function closeNewFolderModal() {
+                if (!newFolderModal) return;
+                newFolderModal.classList.add('hidden');
+                newFolderModal.classList.remove('flex');
+                if (newFolderBtn) newFolderBtn.focus();
+            }
+
+            if (newFolderBtn) newFolderBtn.addEventListener('click', openNewFolderModal);
+            if (newFolderClose) newFolderClose.addEventListener('click', closeNewFolderModal);
+            if (newFolderCancel) newFolderCancel.addEventListener('click', closeNewFolderModal);
+            if (newFolderModal) {
+                newFolderModal.addEventListener('click', function (e) {
+                    if (e.target === newFolderModal) closeNewFolderModal();
+                });
+            }
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && newFolderModal && !newFolderModal.classList.contains('hidden')) {
+                    closeNewFolderModal();
+                }
+            });
+
+            document.addEventListener('change', function (e) {
+                if (e.target && e.target.matches('.js-auto-submit')) {
+                    var form = e.target.form;
+                    if (form) form.submit();
+                }
+            });
         })();
     </script>
 </body>

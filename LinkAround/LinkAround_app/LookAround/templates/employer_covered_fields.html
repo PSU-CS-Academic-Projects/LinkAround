@@ -1,0 +1,53 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Covered Fields{% endblock %}
+
+{% block content %}
+<div class="la-page-header">
+    <div>
+        <p class="la-eyebrow">Employer Portal</p>
+        <h1 class="la-title">Covered fields</h1>
+        <p class="la-subtitle">Public seekers grouped under each business field your company registered. Separate from your shortlist folders.</p>
+    </div>
+    <a href="{% url 'employer_dashboard' employer.id %}" class="la-button-secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+        </svg>
+        Open shortlist
+    </a>
+</div>
+
+{% if field_folders %}
+    <section class="la-panel">
+        <div class="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
+            {% for folder in field_folders %}
+                <a href="{% url 'seeker_list' %}?field={{ folder.field.id }}" class="la-folder-card">
+                    <span class="la-folder-thumb">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                        </svg>
+                    </span>
+                    <h3 class="la-row-title">{{ folder.field.name }}</h3>
+                    <p class="mt-1 text-sm text-gray-500">{{ folder.count }} public seeker{{ folder.count|pluralize }}</p>
+                    {% if folder.preview_seekers %}
+                        <ul class="mt-3 space-y-1 text-sm text-gray-600">
+                            {% for seeker in folder.preview_seekers %}
+                                <li class="truncate">{{ seeker.full_name }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="mt-3 text-sm text-gray-400">No public seekers in this field yet.</p>
+                    {% endif %}
+                    <span class="la-button-secondary mt-auto w-full py-2">Open field</span>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+{% else %}
+    <article class="la-empty">
+        <h2 class="la-card-title">No covered fields yet</h2>
+        <p class="la-muted mt-2">Pick the business fields your company recruits for in your employer profile to start grouping public seekers here.</p>
+        <a href="{% url 'employer_edit' %}" class="la-button-primary mt-5">Edit company profile</a>
+    </article>
+{% endif %}
+{% endblock %}

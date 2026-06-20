@@ -745,7 +745,6 @@ def employer_dashboard(request, employer_id):
 		employer.shortlists
 		.select_related('seeker', 'seeker__location', 'folder')
 		.prefetch_related('seeker__preferred_fields')
-		.order_by('-created_at')
 	)
 	total_saved = base_qs.count()
 	unfiled_count = base_qs.filter(folder__isnull=True).count()
@@ -765,10 +764,18 @@ def employer_dashboard(request, employer_id):
 		selected_folder = 'all'
 		shortlists_qs = base_qs
 
+	shortlist_sort_map = {
+		'new': '-created_at',
+		'old': 'created_at',
+		'name': 'seeker__full_name',
+	}
+	selected_sort = request.GET.get('sort', 'new')
+	if selected_sort not in shortlist_sort_map:
+		selected_sort = 'new'
+	shortlists_qs = shortlists_qs.order_by(shortlist_sort_map[selected_sort])
+
 	paginator = Paginator(shortlists_qs, EMPLOYER_DASHBOARD_PAGE_SIZE)
 	page_obj = paginator.get_page(request.GET.get('page'))
-
-	field_folders = _build_field_folders(employer)
 
 	return render(
 		request,
@@ -778,13 +785,40 @@ def employer_dashboard(request, employer_id):
 			'shortlists': page_obj.object_list,
 			'page_obj': page_obj,
 			'paginator': paginator,
-			'field_folders': field_folders,
 			'folders': folders,
 			'selected_folder': selected_folder,
 			'active_folder': active_folder,
 			'unfiled_count': unfiled_count,
 			'total_saved': total_saved,
+			'selected_sort': selected_sort,
 			'folder_form': ShortlistFolderForm(),
+		},
+	)
+
+
+@employer_required
+def employer_covered_fields(request, employer_id):
+	employer = get_object_or_404(EmployerProfile, pk=employer_id)
+
+	if employer.user_id != request.user.id:
+		messages.error(request, 'You are not authorized to view that page.')
+		return redirect('home')
+
+	record_recent_activity(
+		request,
+		'browse',
+		'Opened covered fields',
+		reverse('employer_covered_fields', kwargs={'employer_id': employer.id}),
+	)
+
+	field_folders = _build_field_folders(employer)
+
+	return render(
+		request,
+		'employer_covered_fields.html',
+		{
+			'employer': employer,
+			'field_folders': field_folders,
 		},
 	)
 

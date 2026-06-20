@@ -50,6 +50,11 @@ urlpatterns = [
         name='employer_dashboard',
     ),
     path(
+        'employer/<int:employer_id>/covered-fields/',
+        main_views.employer_covered_fields,
+        name='employer_covered_fields',
+    ),
+    path(
         'employer/<int:employer_id>/folders/create/',
         main_views.create_folder,
         name='create_folder',

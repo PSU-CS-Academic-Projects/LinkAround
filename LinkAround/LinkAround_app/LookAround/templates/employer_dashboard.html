@@ -54,25 +54,25 @@
             </form>
         </div>
 
-        <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div class="mt-5 grid gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             <a href="?folder=all" class="la-drive-folder {% if selected_folder == 'all' %}la-drive-folder-active{% endif %}">
                 <span class="la-drive-folder-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2Z"></path>
                     </svg>
                 </span>
-                <span class="min-w-0">
+                <span class="la-drive-folder-body">
                     <span class="la-drive-folder-name">All saved</span>
                     <span class="la-drive-folder-count">{{ total_saved }} candidate{{ total_saved|pluralize }}</span>
                 </span>
             </a>
             <a href="?folder=unfiled" class="la-drive-folder {% if selected_folder == 'unfiled' %}la-drive-folder-active{% endif %}">
                 <span class="la-drive-folder-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2Z"></path>
                     </svg>
                 </span>
-                <span class="min-w-0">
+                <span class="la-drive-folder-body">
                     <span class="la-drive-folder-name">Unfiled</span>
                     <span class="la-drive-folder-count">{{ unfiled_count }} candidate{{ unfiled_count|pluralize }}</span>
                 </span>
@@ -80,11 +80,11 @@
             {% for folder in folders %}
                 <a href="?folder={{ folder.id }}" class="la-drive-folder {% if selected_folder == folder.id|stringformat:'s' %}la-drive-folder-active{% endif %}">
                     <span class="la-drive-folder-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2Z"></path>
                         </svg>
                     </span>
-                    <span class="min-w-0">
+                    <span class="la-drive-folder-body">
                         <span class="la-drive-folder-name">{{ folder.name }}</span>
                         <span class="la-drive-folder-count">{{ folder.item_count }} candidate{{ folder.item_count|pluralize }}</span>
                     </span>
@@ -109,9 +109,22 @@
 </section>
 
 <section class="space-y-3">
-    <h3 class="la-card-title">
-        {% if selected_folder == 'unfiled' %}Unfiled candidates{% elif active_folder %}{{ active_folder.name }}{% else %}All saved candidates{% endif %}
-    </h3>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <h3 class="la-card-title">
+            {% if selected_folder == 'unfiled' %}Unfiled candidates{% elif active_folder %}{{ active_folder.name }}{% else %}All saved candidates{% endif %}
+        </h3>
+        <form method="get" class="flex items-center gap-2">
+            {% if selected_folder and selected_folder != 'all' %}
+                <input type="hidden" name="folder" value="{{ selected_folder }}">
+            {% endif %}
+            <label for="shortlist-sort" class="text-sm text-gray-500">Sort by</label>
+            <select id="shortlist-sort" name="sort" class="la-select js-auto-submit h-9 py-0 text-sm">
+                <option value="new" {% if selected_sort == 'new' %}selected{% endif %}>Newest first</option>
+                <option value="old" {% if selected_sort == 'old' %}selected{% endif %}>Oldest first</option>
+                <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>Name A–Z</option>
+            </select>
+        </form>
+    </div>
     {% for item in shortlists %}
         <article class="la-compact-row">
             <input type="checkbox" class="la-checkbox shrink-0" aria-label="Select {{ item.seeker.full_name }}">
@@ -158,45 +171,4 @@
 </section>
 
 {% include 'partials/_pagination.html' %}
-
-{% if field_folders %}
-<section class="la-panel mt-8">
-    <div class="la-panel-body border-b border-gray-100">
-        <p class="la-eyebrow">Employer Portal</p>
-        <h2 class="la-card-title mt-1">Covered fields</h2>
-        <p class="la-muted mt-2">Public seekers grouped under each business field your company registered. Separate from your shortlist folders.</p>
-    </div>
-    <div class="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
-        {% for folder in field_folders %}
-            <a href="{% url 'seeker_list' %}?field={{ folder.field.id }}" class="la-folder-card">
-                <span class="la-folder-thumb">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
-                    </svg>
-                </span>
-                <h3 class="la-row-title">{{ folder.field.name }}</h3>
-                <p class="mt-1 text-sm text-gray-500">{{ folder.count }} public seeker{{ folder.count|pluralize }}</p>
-                {% if folder.preview_seekers %}
-                    <ul class="mt-3 space-y-1 text-sm text-gray-600">
-                        {% for seeker in folder.preview_seekers %}
-                            <li class="truncate">{{ seeker.full_name }}</li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="mt-3 text-sm text-gray-400">No public seekers in this field yet.</p>
-                {% endif %}
-                <span class="la-button-secondary mt-auto w-full py-2">Open field</span>
-            </a>
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
-<script>
-    document.addEventListener('change', function (e) {
-        if (e.target && e.target.matches('.js-auto-submit')) {
-            const form = e.target.form;
-            if (form) form.submit();
-        }
-    });
-</script>
 {% endblock %}
