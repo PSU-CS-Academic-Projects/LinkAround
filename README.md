@@ -15,8 +15,8 @@
 
 ### Members
 
-* _Add team member name_
-* _Add team member name_
+* _Nestor Jann Asag_
+* _Kim Andrei Padrones_
 
 ---
 
