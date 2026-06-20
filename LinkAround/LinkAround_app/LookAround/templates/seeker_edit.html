@@ -1,0 +1,100 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Edit Seeker Profile{% endblock %}
+
+{% block content %}
+<div class="la-page-header">
+    <div>
+        <p class="la-eyebrow">Seeker profile</p>
+        <h1 class="la-title">Edit your portfolio profile</h1>
+        <p class="la-subtitle">Keep your profile, location, field, and portfolio access settings up to date.</p>
+    </div>
+    <a href="{% url 'seeker_notifications' seeker.id %}" class="la-button-secondary">View notifications</a>
+</div>
+
+<section class="la-panel">
+    <form method="post" enctype="multipart/form-data" class="la-panel-body space-y-6">
+        {% csrf_token %}
+
+        <div class="grid gap-5 md:grid-cols-2">
+            <label>
+                <span class="la-field-label">Full name</span>
+                {{ form.full_name }}
+            </label>
+            <label>
+                <span class="la-field-label">Email</span>
+                {{ form.email }}
+            </label>
+            <label>
+                <span class="la-field-label">Degree</span>
+                {{ form.degree }}
+            </label>
+            <label>
+                <span class="la-field-label">Degree level</span>
+                {{ form.degree_level }}
+            </label>
+            <label>
+                <span class="la-field-label">Location</span>
+                {{ form.location }}
+            </label>
+            <label>
+                <span class="la-field-label">Work arrangement</span>
+                {{ form.work_arrangement }}
+            </label>
+            <div class="md:col-span-2">
+                <span class="la-field-label">Preferred fields</span>
+                <p class="-mt-1 mb-3 text-xs text-gray-500">Pick every field your portfolio should appear under.</p>
+                <fieldset class="la-fieldset">
+                    <legend class="sr-only">Preferred fields</legend>
+                    <div class="la-checkbox-grid">
+                        <div>
+                            {% for checkbox in form.preferred_fields %}
+                                <label>
+                                    {{ checkbox.tag }}
+                                    <span>{{ checkbox.choice_label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if form.preferred_fields.errors %}
+                        <div class="la-alert la-alert-error mt-4">{{ form.preferred_fields.errors|striptags }}</div>
+                    {% endif %}
+                </fieldset>
+            </div>
+            <label class="md:col-span-2">
+                <span class="la-field-label">Short bio</span>
+                {{ form.bio }}
+            </label>
+            <label class="md:col-span-2">
+                <span class="la-field-label">Portfolio file</span>
+                {{ form.portfolio_file }}
+            </label>
+        </div>
+
+        <div class="grid gap-3 md:grid-cols-2">
+            <label class="la-check-option">
+                {{ form.is_public }}
+                <span>
+                    <span class="block text-sm font-semibold text-gray-900">Make profile public</span>
+                    <span class="block text-sm text-gray-500">Visible in employer portfolio browsing.</span>
+                </span>
+            </label>
+            <label class="la-check-option">
+                {{ form.allow_download }}
+                <span>
+                    <span class="block text-sm font-semibold text-gray-900">Allow portfolio viewing</span>
+                    <span class="block text-sm text-gray-500">Employers can open your uploaded file.</span>
+                </span>
+            </label>
+        </div>
+
+        {% if form.errors %}
+            <div class="la-alert la-alert-error">Please review the form fields and try again.</div>
+        {% endif %}
+
+        <div class="flex justify-end">
+            <button type="submit" class="la-button-primary">Save changes</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

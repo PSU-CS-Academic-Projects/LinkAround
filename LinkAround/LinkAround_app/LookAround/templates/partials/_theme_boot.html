@@ -1,0 +1,14 @@
+<script>
+    (function () {
+        try {
+            var mode = localStorage.getItem('linkaround-theme-mode') || 'system';
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var theme = mode === 'dark' || (mode === 'system' && prefersDark) ? 'dark' : 'corporate';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+            document.addEventListener('DOMContentLoaded', function () {
+                document.body.classList.toggle('la-dark', theme === 'dark');
+            });
+        } catch (e) {}
+    })();
+</script>

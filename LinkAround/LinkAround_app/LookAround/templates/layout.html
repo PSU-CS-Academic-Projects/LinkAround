@@ -5,105 +5,434 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LinkAround{% endblock %}</title>
+    <script>
+        (function () {
+            const mode = localStorage.getItem('linkaround-theme-mode') || 'system';
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = mode === 'system' ? (prefersDark ? 'dark' : 'corporate') : (mode === 'dark' ? 'dark' : 'corporate');
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+        })();
+    </script>
     {% tailwind_css %}
 </head>
-<body class="min-h-screen bg-base-200 text-base-content">
-    <header class="navbar bg-base-100 shadow-sm border-b border-base-300 px-4 lg:px-8">
-        <div class="navbar-start">
-            <a href="{% url 'home' %}" class="btn btn-ghost text-lg font-semibold">LinkAround</a>
-        </div>
-        <div class="navbar-center hidden lg:flex">
-            <ul class="menu menu-horizontal px-1 text-sm">
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'seeker_register' %}">For Seekers</a></li>
-                <li><a href="{% url 'employer_register' %}">For Employers</a></li>
-                <li><a href="{% url 'seeker_list' %}">Browse Portfolios</a></li>
-            </ul>
-        </div>
-        <div class="navbar-end gap-2">
-            <select id="theme-mode" class="select select-bordered select-sm" title="Choose theme mode">
-                <option value="system">System</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-            </select>
-            <label class="swap swap-rotate btn btn-ghost btn-sm" title="Quick toggle between light and dark">
-                <input id="theme-toggle" type="checkbox" />
-                <svg class="swap-off h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 16a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1Zm10-6a1 1 0 0 1-1 1h-2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1ZM5 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"/></svg>
-                <svg class="swap-on h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.64 13a1 1 0 0 0-1.05-.14 8 8 0 0 1-10.45-10.45 1 1 0 0 0-1.2-1.34 10 10 0 1 0 12.84 12.84 1 1 0 0 0-.14-1.05Z"/></svg>
-            </label>
-        </div>
-    </header>
-
-    <main class="max-w-6xl mx-auto px-4 py-8">
-        {% if messages %}
-            <div class="space-y-2 mb-4">
-                {% for message in messages %}
-                    <div class="alert alert-info shadow-sm">{{ message }}</div>
-                {% endfor %}
+<body class="bg-brand-50 text-base font-normal text-gray-700">
+    {% with current_url=request.resolver_match.url_name %}
+    <div class="flex h-dvh overflow-hidden">
+        <aside id="app-sidebar" class="sidebar la-sidebar fixed left-0 top-0 z-40 flex h-dvh w-[290px] -translate-x-full flex-col overflow-y-hidden border-r border-white/10 px-5 transition-transform duration-300 ease-linear lg:static lg:translate-x-0">
+            <div class="flex items-center gap-3 pb-7 pt-8">
+                <a href="{% url 'home' %}" class="flex items-center gap-3">
+                    <span class="grid h-11 w-11 place-items-center rounded-xl bg-white text-lg font-bold text-brand-600 shadow-theme-sm">L</span>
+                    <span>
+                        <span class="block text-xl font-bold text-gray-900">LinkAround</span>
+                        <span class="block text-theme-xs text-gray-400">Portfolio matching</span>
+                    </span>
+                </a>
             </div>
-        {% endif %}
 
-        {% block content %}{% endblock %}
-    </main>
+            <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
+                <div class="la-subsurface mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="grid h-12 w-12 place-items-center rounded-full border border-gray-200 bg-white text-lg font-semibold text-brand-500">
+                            {% if request.user.is_authenticated %}{{ request.user.username|make_list|first|upper }}{% else %}G{% endif %}
+                        </span>
+                        <div class="min-w-0">
+                            <p class="truncate text-theme-sm font-semibold text-gray-900">
+                                {% if request.user.is_authenticated %}
+                                    {% if employer_profile %}{{ employer_profile.company_name }}{% else %}{{ request.user.username }}{% endif %}
+                                {% else %}
+                                    Guest
+                                {% endif %}
+                            </p>
+                            <p class="truncate text-theme-xs text-gray-500">
+                                {% if is_admin %}Admin account{% elif is_employer %}Employer account{% elif is_seeker %}Seeker account{% elif needs_role %}Choose role{% else %}Profile{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% if request.user.is_authenticated %}
+                        {% if is_admin %}
+                            <a href="{% url 'admin_dashboard' %}" class="la-button-secondary mt-4 w-full py-2">Admin dashboard</a>
+                        {% elif employer_profile %}
+                            <a href="{% url 'employer_edit' %}" class="la-button-secondary mt-4 w-full py-2">Profile</a>
+                        {% elif seeker_profile %}
+                            <a href="{% url 'seeker_edit' %}" class="la-button-secondary mt-4 w-full py-2">Profile</a>
+                        {% elif needs_role %}
+                            <a href="{% url 'choose_role' %}" class="la-button-secondary mt-4 w-full py-2">Choose role</a>
+                        {% elif is_employer %}
+                            <a href="{% url 'employer_register' %}" class="la-button-secondary mt-4 w-full py-2">Setup company</a>
+                        {% elif is_seeker %}
+                            <a href="{% url 'seeker_register' %}" class="la-button-secondary mt-4 w-full py-2">Setup profile</a>
+                        {% else %}
+                            <a href="{% url 'home' %}" class="la-button-secondary mt-4 w-full py-2">Dashboard</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}" class="la-button-secondary mt-4 w-full py-2">Profile</a>
+                    {% endif %}
+                </div>
+
+                <nav>
+                    <div>
+                        <h3 class="menu-group-title">Menu</h3>
+                        <ul class="mb-6 flex flex-col gap-2">
+                            <li>
+                                <a href="{% url 'home' %}" class="menu-item group {% if current_url == 'home' %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                                    <svg class="h-5 w-5 {% if current_url == 'home' %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M4 13h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1Zm0 8h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1Zm10 0h6a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1Zm0-12h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1Z"></path>
+                                    </svg>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'seeker_list' %}" class="menu-item group {% if current_url == 'seeker_list' %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                                    <svg class="h-5 w-5 {% if current_url == 'seeker_list' %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                                    </svg>
+                                    Browse Portfolios
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="menu-group-title">{% if is_employer %}Recent Folder{% else %}Recents{% endif %}</h3>
+                        <ul class="la-subsurface mb-6 space-y-2 p-3">
+                            {% if request.user.is_authenticated and recent_activities %}
+                                {% for activity in recent_activities %}
+                                    <li>
+                                        <a href="{{ activity.url }}" class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-theme-sm text-gray-600 hover:bg-white/10">
+                                            <span class="h-3 w-3 rounded-sm border border-gray-300 bg-white"></span>
+                                            <span class="truncate">{{ activity.label }}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            {% elif trending_fields %}
+                                {% for field in trending_fields %}
+                                    <li>
+                                        <a href="{% url 'seeker_list' %}?field={{ field.id }}" class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-theme-sm text-gray-600 hover:bg-white/10">
+                                            <span class="h-3 w-3 rounded-sm border border-gray-300 bg-white"></span>
+                                            <span class="truncate">{{ field.name }}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
+                                <li><span class="block px-2 py-1.5 text-theme-sm text-gray-500">Recent activity will appear here.</span></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    {% if not request.user.is_authenticated %}
+                        <div>
+                            <h3 class="menu-group-title">Getting Started</h3>
+                            <ul class="mb-6 flex flex-col gap-2">
+                                <li><a href="{% url 'account_register' %}" class="menu-item {% if current_url == 'account_register' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Create account</a></li>
+                                <li><a href="{% url 'seeker_register' %}" class="menu-item {% if current_url == 'seeker_register' %}menu-item-active{% else %}menu-item-inactive{% endif %}">For seekers</a></li>
+                                <li><a href="{% url 'employer_register' %}" class="menu-item {% if current_url == 'employer_register' %}menu-item-active{% else %}menu-item-inactive{% endif %}">For employers</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        {% if is_admin %}
+                            <div>
+                                <h3 class="menu-group-title">Admin Portal</h3>
+                                <ul class="mb-6 flex flex-col gap-2">
+                                    <li><a href="{% url 'admin_dashboard' %}" class="menu-item {% if current_url == 'admin_dashboard' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Admin dashboard</a></li>
+                                    {% if can_use_django_admin %}
+                                        <li><a href="{% url 'admin:index' %}" class="menu-item menu-item-inactive">Django admin</a></li>
+                                    {% endif %}
+                                    <li><a href="{% url 'seeker_list' %}" class="menu-item {% if current_url == 'seeker_list' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Review portfolios</a></li>
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        {% if is_seeker %}
+                            <div>
+                                <h3 class="menu-group-title">Seeker Portal</h3>
+                                <ul class="mb-6 flex flex-col gap-2">
+                                    {% if seeker_profile %}
+                                        <li><a href="{% url 'seeker_edit' %}" class="menu-item {% if current_url == 'seeker_edit' %}menu-item-active{% else %}menu-item-inactive{% endif %}">My profile</a></li>
+                                        <li>
+                                            <a href="{% url 'seeker_notifications' seeker_profile.id %}" class="menu-item {% if current_url == 'seeker_notifications' %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                                                Notifications
+                                                {% if unread_notification_count %}<span class="ml-auto rounded-full bg-brand-500 px-2 py-0.5 text-xs text-white">{{ unread_notification_count }}</span>{% endif %}
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li><a href="{% url 'seeker_register' %}" class="menu-item {% if current_url == 'seeker_register' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Setup portfolio</a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        {% if is_employer %}
+                            <div>
+                                <h3 class="menu-group-title">Employer Portal</h3>
+                                <ul class="mb-6 flex flex-col gap-2">
+                                    {% if employer_profile %}
+                                        <li><a href="{% url 'employer_dashboard' employer_profile.id %}" class="menu-item {% if current_url == 'employer_dashboard' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Shortlist folder</a></li>
+                                        <li><a href="{% url 'employer_edit' %}" class="menu-item {% if current_url == 'employer_edit' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Company profile</a></li>
+                                    {% else %}
+                                        <li><a href="{% url 'employer_register' %}" class="menu-item {% if current_url == 'employer_register' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Setup company</a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        {% if needs_role %}
+                            <div>
+                                <h3 class="menu-group-title">Setup</h3>
+                                <ul class="mb-6 flex flex-col gap-2">
+                                    <li><a href="{% url 'choose_role' %}" class="menu-item {% if current_url == 'choose_role' %}menu-item-active{% else %}menu-item-inactive{% endif %}">Choose role</a></li>
+                                </ul>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </nav>
+
+                <div class="mt-auto border-t border-gray-200 pt-4">
+                    {% if request.user.is_authenticated %}
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="menu-item w-full text-red-600 hover:bg-red-50 hover:text-red-700">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0-4-4m4 4H7m6 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1"></path>
+                                </svg>
+                                Logout
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="menu-item menu-item-inactive">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-gray-900/50 lg:hidden"></div>
+
+        <div class="relative flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+            <header class="sticky top-0 z-20 flex w-full border-brand-200 bg-brand-50 lg:border-b">
+                <div class="flex grow flex-col items-center justify-between lg:flex-row lg:px-6">
+                    <div class="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
+                        <button id="sidebar-toggle" type="button" class="tailadmin-header-btn lg:hidden" aria-label="Open navigation menu" aria-controls="app-sidebar" aria-expanded="false">
+                            <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M3.25 6A.75.75 0 0 1 4 5.25h16a.75.75 0 0 1 0 1.5H4A.75.75 0 0 1 3.25 6Zm0 12a.75.75 0 0 1 .75-.75h16a.75.75 0 0 1 0 1.5H4a.75.75 0 0 1-.75-.75ZM4 11.25a.75.75 0 0 0 0 1.5h8a.75.75 0 0 0 0-1.5H4Z"></path>
+                            </svg>
+                        </button>
+
+                        <a href="{% url 'home' %}" class="flex items-center gap-2 font-semibold text-gray-900 lg:hidden">
+                            <span class="grid h-9 w-9 place-items-center rounded-lg bg-brand-500 text-white">L</span>
+                            LinkAround
+                        </a>
+
+                        <form action="{% url 'seeker_list' %}" method="get" class="hidden md:block">
+                            <div class="la-search xl:w-full xl:max-w-[430px]">
+                                <span class="la-search-icon">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"></path>
+                                    </svg>
+                                </span>
+                                <input id="topbar-search" name="q" type="search" placeholder="Search portfolios..." class="la-search-input" aria-label="Search portfolios">
+                                <kbd class="la-search-kbd">/</kbd>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="flex w-full items-center justify-between gap-4 px-5 py-4 shadow-theme-sm lg:w-auto lg:justify-end lg:px-0 lg:shadow-none">
+                        <div class="flex items-center gap-2">
+                            <a href="{% if is_admin %}{% url 'admin_dashboard' %}{% elif employer_profile %}{% url 'employer_dashboard' employer_profile.id %}{% elif is_employer %}{% url 'employer_register' %}{% elif seeker_profile %}{% url 'seeker_edit' %}{% elif is_seeker %}{% url 'seeker_register' %}{% elif needs_role %}{% url 'choose_role' %}{% else %}{% url 'account_register' %}{% endif %}" class="tailadmin-header-btn" title="{% if is_admin %}Open admin dashboard{% elif employer_profile %}Open shortlist folders{% elif is_employer %}Set up company{% elif seeker_profile %}Update your portfolio{% elif is_seeker %}Create your portfolio{% else %}Create account{% endif %}" aria-label="{% if is_admin %}Open admin dashboard{% elif employer_profile %}Open shortlist folders{% elif is_employer %}Set up company{% elif seeker_profile %}Update your portfolio{% elif is_seeker %}Create your portfolio{% else %}Create account{% endif %}">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
+                                </svg>
+                            </a>
+                            <button id="theme-toggle" type="button" class="tailadmin-header-btn w-auto gap-2 px-3" title="Cycle theme mode" aria-label="Cycle theme mode">
+                                <svg id="theme-light-icon" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z"></path></svg>
+                                <svg id="theme-dark-icon" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M21 14.79A9 9 0 0 1 9.21 3 7 7 0 1 0 21 14.79Z"></path></svg>
+                                <svg id="theme-system-icon" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm8 11v4m-4 0h8"></path>
+                                </svg>
+                                <span id="theme-mode-label" class="text-theme-xs font-semibold sm:inline">Auto</span>
+                            </button>
+                        </div>
+
+                        <div class="dropdown dropdown-end">
+                            {% if request.user.is_authenticated %}
+                                <div tabindex="0" role="button" class="flex items-center text-gray-700">
+                                    <span class="mr-3 grid h-11 w-11 place-items-center rounded-full bg-brand-500 text-theme-sm font-semibold text-white">{{ request.user.username|make_list|first|upper }}</span>
+                                    <span class="mr-1 hidden text-theme-sm font-medium sm:block">{{ request.user.username }}</span>
+                                    <svg class="hidden h-5 w-5 stroke-gray-500 sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"></path>
+                                    </svg>
+                                </div>
+                                <ul tabindex="0" class="dropdown-content z-50 mt-4 w-64 rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg">
+                                    <li class="border-b border-gray-200 pb-3">
+                                        <span class="block text-theme-sm font-medium text-gray-700">{{ request.user.username }}</span>
+                                        <span class="mt-0.5 block text-theme-xs text-gray-500">Signed in</span>
+                                    </li>
+                                    {% if is_admin %}<li><a href="{% url 'admin_dashboard' %}" class="menu-item menu-item-inactive mt-2">Admin dashboard</a></li>{% endif %}
+                                    {% if can_use_django_admin %}<li><a href="{% url 'admin:index' %}" class="menu-item menu-item-inactive mt-2">Django admin</a></li>{% endif %}
+                                    {% if seeker_profile %}<li><a href="{% url 'seeker_edit' %}" class="menu-item menu-item-inactive mt-2">Edit seeker profile</a></li>{% endif %}
+                                    {% if employer_profile %}<li><a href="{% url 'employer_edit' %}" class="menu-item menu-item-inactive mt-2">Edit company profile</a></li>{% endif %}
+                                    {% if needs_role %}<li><a href="{% url 'choose_role' %}" class="menu-item menu-item-inactive mt-2">Choose role</a></li>{% endif %}
+                                    <li>
+                                        <form method="post" action="{% url 'logout' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="menu-item mt-2 w-full text-red-600 hover:bg-red-50">Sign out</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            {% else %}
+                                <div class="flex gap-2">
+                                    <a href="{% url 'login' %}" class="la-button-secondary">Login</a>
+                                    <a href="{% url 'account_register' %}" class="la-button-primary">Register</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 bg-brand-50">
+                <div class="mx-auto w-full max-w-none p-4 md:p-6 2xl:px-8">
+                    {% if messages %}
+                        <div class="mb-6 space-y-3" aria-live="polite">
+                            {% for message in messages %}
+                                <div class="la-alert {% if message.tags == 'error' %}la-alert-error{% elif message.tags == 'success' %}la-alert-success{% else %}la-alert-info{% endif %}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">
+                                    <span>{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+    {% endwith %}
 
     <script>
         (function () {
             const html = document.documentElement;
-            const modeSelect = document.getElementById('theme-mode');
-            const toggle = document.getElementById('theme-toggle');
+            const body = document.body;
+            const sidebar = document.getElementById('app-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const themeToggle = document.getElementById('theme-toggle');
+            const lightIcon = document.getElementById('theme-light-icon');
+            const darkIcon = document.getElementById('theme-dark-icon');
+            const systemIcon = document.getElementById('theme-system-icon');
+            const modeLabel = document.getElementById('theme-mode-label');
             const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-            const THEME_MODE_KEY = 'linkaround-theme-mode';
+            const themeKey = 'linkaround-theme-mode';
+            const modes = ['system', 'light', 'dark'];
+
+            function openSidebar() {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                if (sidebarToggle) sidebarToggle.setAttribute('aria-expanded', 'true');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                if (sidebarToggle) sidebarToggle.setAttribute('aria-expanded', 'false');
+            }
+
+            if (sidebarToggle) sidebarToggle.addEventListener('click', openSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && overlay && !overlay.classList.contains('hidden')) {
+                    closeSidebar();
+                    if (sidebarToggle) sidebarToggle.focus();
+                }
+            });
+
+            document.querySelectorAll('[data-menu-dropdown-toggle]').forEach(function (toggle) {
+                const target = document.getElementById(toggle.dataset.menuDropdownToggle);
+                const arrow = toggle.querySelector('.menu-item-arrow');
+                if (!target) return;
+
+                toggle.addEventListener('click', function () {
+                    const willOpen = target.classList.contains('hidden');
+                    target.classList.toggle('hidden', !willOpen);
+                    target.classList.toggle('block', willOpen);
+                    toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                    if (arrow) {
+                        arrow.classList.toggle('menu-item-arrow-active', willOpen);
+                        arrow.classList.toggle('menu-item-arrow-inactive', !willOpen);
+                    }
+                });
+            });
+
+            function preferredMode() {
+                return localStorage.getItem(themeKey) || 'system';
+            }
 
             function resolveTheme(mode) {
-                if (mode === 'dark') {
-                    return 'dark';
-                }
-                if (mode === 'light') {
-                    return 'corporate';
-                }
+                if (mode === 'dark') return 'dark';
+                if (mode === 'light') return 'corporate';
                 return mediaQuery.matches ? 'dark' : 'corporate';
             }
 
             function applyTheme(mode) {
-                const resolvedTheme = resolveTheme(mode);
-                html.setAttribute('data-theme', resolvedTheme);
-
-                if (toggle) {
-                    toggle.checked = resolvedTheme === 'dark';
+                const theme = resolveTheme(mode);
+                html.setAttribute('data-theme', theme);
+                html.classList.toggle('dark', theme === 'dark');
+                body.classList.toggle('la-dark', theme === 'dark');
+                body.classList.toggle('dark', theme === 'dark');
+                if (lightIcon && darkIcon && systemIcon) {
+                    systemIcon.classList.toggle('hidden', mode !== 'system');
+                    lightIcon.classList.toggle('hidden', mode !== 'light');
+                    darkIcon.classList.toggle('hidden', mode !== 'dark');
                 }
-
-                if (modeSelect) {
-                    modeSelect.value = mode;
+                if (modeLabel) {
+                    modeLabel.textContent = mode === 'system' ? 'Auto' : mode.charAt(0).toUpperCase() + mode.slice(1);
                 }
+                if (themeToggle) themeToggle.setAttribute('title', 'Theme: ' + (mode === 'system' ? 'Auto' : mode));
             }
 
-            function setMode(mode) {
-                localStorage.setItem(THEME_MODE_KEY, mode);
-                applyTheme(mode);
-            }
+            applyTheme(preferredMode());
 
-            const initialMode = localStorage.getItem(THEME_MODE_KEY) || 'system';
-            applyTheme(initialMode);
-
-            if (modeSelect) {
-                modeSelect.addEventListener('change', function () {
-                    setMode(modeSelect.value);
-                });
-            }
-
-            if (toggle) {
-                toggle.addEventListener('change', function () {
-                    const nextMode = toggle.checked ? 'dark' : 'light';
-                    setMode(nextMode);
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function () {
+                    const current = preferredMode();
+                    const nextMode = modes[(modes.indexOf(current) + 1) % modes.length];
+                    localStorage.setItem(themeKey, nextMode);
+                    applyTheme(nextMode);
                 });
             }
 
             mediaQuery.addEventListener('change', function () {
-                const mode = localStorage.getItem(THEME_MODE_KEY) || 'system';
-                if (mode === 'system') {
-                    applyTheme('system');
-                }
+                if (preferredMode() === 'system') applyTheme('system');
             });
+
+            // States & feedback: disable submit buttons after submit to stop
+            // double-POSTs (folder create, shortlist add, profile save).
+            document.querySelectorAll('form').forEach(function (form) {
+                form.addEventListener('submit', function (e) {
+                    // Skip if a confirm() / validation handler cancelled the submit.
+                    if (e.defaultPrevented) return;
+                    form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function (btn) {
+                        // Defer so the button's value is still submitted with the form.
+                        setTimeout(function () {
+                            btn.disabled = true;
+                            btn.classList.add('is-submitting');
+                        }, 0);
+                    });
+                });
+            });
+
+            var topbarSearch = document.getElementById('topbar-search');
+            if (topbarSearch) {
+                document.addEventListener('keydown', function (e) {
+                    var tag = (e.target.tagName || '').toLowerCase();
+                    var typing = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable;
+                    if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                        e.preventDefault();
+                        topbarSearch.focus();
+                    } else if (e.key === 'Escape' && document.activeElement === topbarSearch) {
+                        topbarSearch.blur();
+                    }
+                });
+            }
         })();
     </script>
 </body>

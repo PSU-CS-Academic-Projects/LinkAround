@@ -1,0 +1,132 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkAround | Register</title>
+    {% include 'partials/_theme_boot.html' %}
+    {% tailwind_css %}
+</head>
+<body class="landing-body">
+    <main class="auth-shell auth-shell-register">
+        <section class="auth-art">
+            <a href="{% url 'home' %}" class="landing-brand">
+                <span class="landing-brand-mark">L</span>
+                <span>
+                    <span class="landing-brand-name">LinkAround</span>
+                    <span class="landing-brand-line">Portfolio matching</span>
+                </span>
+            </a>
+            <div class="auth-preview">
+                <p>Role setup</p>
+                <h1>Create the workspace that matches how you use portfolios.</h1>
+                <div class="auth-path">
+                    <span>Seeker profile</span>
+                    <span>Field directory</span>
+                    <span>Shortlist folder</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="auth-panel">
+            <div class="auth-card auth-card-wide">
+                <p class="auth-kicker">New workspace</p>
+                <h2>Create your account</h2>
+                <p>Pick a starting role now. The matching profile form comes next.</p>
+
+                <div class="auth-social-grid">
+                    <form method="post" action="{% url 'social_google_login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">
+                        {% csrf_token %}
+                        <button type="submit">
+                            <span class="social-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M21.6 12.23c0-.74-.07-1.46-.19-2.15H12v4.07h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.24c1.89-1.74 2.98-4.3 2.98-7.44Z"/><path fill="#34A853" d="M12 22c2.7 0 4.96-.89 6.62-2.42l-3.24-2.5c-.9.6-2.04.95-3.38.95-2.6 0-4.8-1.76-5.59-4.12H3.07v2.58A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.41 13.91a6 6 0 0 1 0-3.82V7.51H3.07a10 10 0 0 0 0 8.98l3.34-2.58Z"/><path fill="#EA4335" d="M12 5.97c1.47 0 2.78.5 3.82 1.49l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.93 5.51l3.34 2.58C7.2 7.73 9.4 5.97 12 5.97Z"/></svg>
+                            </span>
+                            Google
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'social_microsoft_login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">
+                        {% csrf_token %}
+                        <button type="submit">
+                            <span class="social-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path fill="#F25022" d="M3 3h8.5v8.5H3z"/><path fill="#7FBA00" d="M12.5 3H21v8.5h-8.5z"/><path fill="#00A4EF" d="M3 12.5h8.5V21H3z"/><path fill="#FFB900" d="M12.5 12.5H21V21h-8.5z"/></svg>
+                            </span>
+                            Microsoft
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'social_apple_login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">
+                        {% csrf_token %}
+                        <button type="submit">
+                            <span class="social-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.25 12.6c-.02-2.38 1.94-3.52 2.03-3.58-1.11-1.63-2.84-1.86-3.45-1.88-1.47-.15-2.87.86-3.62.86-.75 0-1.9-.84-3.13-.82-1.61.02-3.1.94-3.93 2.39-1.68 2.91-.43 7.22 1.2 9.58.8 1.16 1.75 2.46 3 2.41 1.2-.05 1.66-.78 3.12-.78 1.45 0 1.87.78 3.14.75 1.3-.02 2.12-1.18 2.91-2.34.92-1.34 1.3-2.64 1.32-2.71-.03-.01-2.54-.97-2.59-3.88ZM14.87 5.59c.66-.8 1.1-1.9.98-3-.95.04-2.09.63-2.77 1.42-.61.7-1.14 1.83-1 2.91 1.06.08 2.13-.54 2.79-1.33Z"/></svg>
+                            </span>
+                            Apple
+                        </button>
+                    </form>
+                </div>
+
+                <div class="auth-divider"><span>or register manually</span></div>
+
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+                    <label for="{{ form.username.id_for_label }}">
+                        <span>Username</span>
+                        {{ form.username }}
+                        {% if form.username.errors %}<span class="auth-field-error" role="alert">{{ form.username.errors|striptags }}</span>{% endif %}
+                    </label>
+                    <label for="{{ form.email.id_for_label }}">
+                        <span>Email</span>
+                        {{ form.email }}
+                        {% if form.email.errors %}<span class="auth-field-error" role="alert">{{ form.email.errors|striptags }}</span>{% endif %}
+                    </label>
+                    <label for="{{ form.password1.id_for_label }}">
+                        <span>Password</span>
+                        <span class="la-pw-field">
+                            {{ form.password1 }}
+                            <button type="button" class="la-pw-toggle" data-pw-toggle="{{ form.password1.id_for_label }}" aria-label="Show password">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7S3.73 16.06 2.46 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </span>
+                        {% if form.password1.help_text %}<span class="auth-field-hint">{{ form.password1.help_text|safe }}</span>{% endif %}
+                        {% if form.password1.errors %}<span class="auth-field-error" role="alert">{{ form.password1.errors|striptags }}</span>{% endif %}
+                    </label>
+                    <label for="{{ form.password2.id_for_label }}">
+                        <span>Confirm password</span>
+                        <span class="la-pw-field">
+                            {{ form.password2 }}
+                            <button type="button" class="la-pw-toggle" data-pw-toggle="{{ form.password2.id_for_label }}" aria-label="Show password">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7S3.73 16.06 2.46 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </span>
+                        {% if form.password2.errors %}<span class="auth-field-error" role="alert">{{ form.password2.errors|striptags }}</span>{% endif %}
+                    </label>
+                    <label for="{{ form.role.id_for_label }}">
+                        <span>Account type</span>
+                        {{ form.role }}
+                        {% if form.role.errors %}<span class="auth-field-error" role="alert">{{ form.role.errors|striptags }}</span>{% endif %}
+                    </label>
+
+                    {% if form.non_field_errors %}
+                        <div class="la-alert la-alert-error">{{ form.non_field_errors|striptags }}</div>
+                    {% endif %}
+
+                    <button type="submit" class="auth-submit">Create account</button>
+                    <p class="auth-switch">Already registered? <a href="{% url 'login' %}">Sign in</a></p>
+                </form>
+            </div>
+        </section>
+    </main>
+    <script>
+        document.querySelectorAll('[data-pw-toggle]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(btn.dataset.pwToggle);
+                if (!input) return;
+                var reveal = input.type === 'password';
+                input.type = reveal ? 'text' : 'password';
+                btn.classList.toggle('is-on', reveal);
+                btn.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+            });
+        });
+    </script>
+</body>
+</html>

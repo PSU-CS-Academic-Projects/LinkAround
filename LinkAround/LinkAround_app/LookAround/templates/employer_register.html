@@ -3,51 +3,65 @@
 {% block title %}LinkAround | Employer Registration{% endblock %}
 
 {% block content %}
-<section class="card bg-base-100 border border-base-300 shadow-sm max-w-3xl mx-auto">
-    <div class="card-body">
-        <h1 class="card-title text-2xl">Employer Registration</h1>
-        <p class="text-base-content/70">Set business coverage fields to unlock matching portfolios.</p>
-
-        <form method="post" class="space-y-4 mt-2">
-            {% csrf_token %}
-
-            <label class="form-control w-full">
-                <span class="label-text">Company name</span>
-                {{ form.company_name }}
-            </label>
-
-            <label class="form-control w-full">
-                <span class="label-text">Contact person</span>
-                {{ form.contact_person }}
-            </label>
-
-            <label class="form-control w-full">
-                <span class="label-text">Email</span>
-                {{ form.email }}
-            </label>
-
-            <label class="form-control w-full">
-                <span class="label-text">Location</span>
-                {{ form.location }}
-            </label>
-
-            <fieldset class="fieldset bg-base-200 border border-base-300 rounded-box p-4">
-                <legend class="fieldset-legend">Business fields covered</legend>
-                <div class="space-y-2">
-                    {{ form.business_fields }}
-                </div>
-            </fieldset>
-
-            {% if form.errors %}
-                <div class="alert alert-error">
-                    <span>Please review the form fields and try again.</span>
-                </div>
-            {% endif %}
-
-            <div class="card-actions justify-end">
-                <button type="submit" class="btn btn-primary">Submit Employer Profile</button>
-            </div>
-        </form>
+<div class="la-page-header">
+    <div>
+        <p class="la-eyebrow">Employer profile</p>
+        <h1 class="la-title">Create your company workspace</h1>
+        <p class="la-subtitle">Set company details and business fields so portfolio discovery starts from the right folders.</p>
     </div>
+</div>
+
+<section class="la-panel">
+    <form method="post" class="la-panel-body space-y-6">
+        {% csrf_token %}
+
+        <div class="grid gap-5 md:grid-cols-2">
+            <label>
+                <span class="la-field-label">Company name</span>
+                {{ form.company_name }}
+                {% if form.company_name.errors %}<span class="la-field-error" role="alert">{{ form.company_name.errors|striptags }}</span>{% endif %}
+            </label>
+            <label>
+                <span class="la-field-label">Contact person</span>
+                {{ form.contact_person }}
+                {% if form.contact_person.errors %}<span class="la-field-error" role="alert">{{ form.contact_person.errors|striptags }}</span>{% endif %}
+            </label>
+            <label>
+                <span class="la-field-label">Email</span>
+                {{ form.email }}
+                {% if form.email.errors %}<span class="la-field-error" role="alert">{{ form.email.errors|striptags }}</span>{% endif %}
+            </label>
+            <label>
+                <span class="la-field-label">Location</span>
+                {{ form.location }}
+                {% if form.location.errors %}<span class="la-field-error" role="alert">{{ form.location.errors|striptags }}</span>{% endif %}
+            </label>
+        </div>
+
+        <fieldset class="la-fieldset">
+            <legend class="px-2 text-sm font-semibold text-gray-900">Business fields covered</legend>
+            <div class="la-checkbox-grid mt-3">
+                <div>
+                    {% for checkbox in form.business_fields %}
+                        <label>
+                            {{ checkbox.tag }}
+                            <span>{{ checkbox.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if form.business_fields.errors %}
+                <div class="la-alert la-alert-error mt-4">{{ form.business_fields.errors|striptags }}</div>
+            {% endif %}
+        </fieldset>
+
+        {% if form.errors %}
+            <div class="la-alert la-alert-error">Please review the form fields and try again.</div>
+        {% endif %}
+
+        <div class="flex justify-end">
+            <button type="submit" class="la-button-primary">Submit employer profile</button>
+        </div>
+    </form>
 </section>
 {% endblock %}

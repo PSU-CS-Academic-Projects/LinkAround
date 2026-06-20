@@ -1,66 +1,199 @@
-{% extends 'layout.html' %}
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkAround | Portfolio Directory</title>
+    {% include 'partials/_theme_boot.html' %}
+    {% tailwind_css %}
+</head>
+<body class="landing-body">
+    <main class="landing-shell">
+        <section class="landing-hero">
+            <div class="landing-noise"></div>
+            <div class="landing-beam landing-beam-one"></div>
+            <div class="landing-beam landing-beam-two"></div>
 
-{% block title %}LinkAround | Home{% endblock %}
+            <div class="landing-frame">
+                <div class="landing-copy">
+                    <a href="{% url 'home' %}" class="landing-brand" aria-label="LinkAround home">
+                        <span class="landing-brand-mark">L</span>
+                        <span>
+                            <span class="landing-brand-name">LinkAround</span>
+                            <span class="landing-brand-line">Portfolio matching, not job posting</span>
+                        </span>
+                    </a>
 
-{% block content %}
-<section class="bg-base-100 rounded-box shadow-sm border border-base-300 p-8 md:p-10">
-    <p class="badge badge-outline">Online Seekers and Employers Portfolio Site</p>
-    <h1 class="text-3xl md:text-5xl font-bold mt-3">Card-based platform for talent and hiring teams</h1>
-    <p class="mt-4 text-base-content/70 max-w-3xl">
-        Register as a seeker to submit your portfolio, or as an employer to discover candidates by field and location.
-        Built for faster matching and cleaner portfolio management.
-    </p>
-</section>
+                    <h1 class="landing-title">
+                        Turn portfolio discovery into a private shortlist flow.
+                    </h1>
+                    <p class="landing-lead">
+                        LinkAround gives seekers one focused portfolio profile and gives employers a field-based workspace
+                        for browsing, saving, and notifying candidates without running a full job marketplace.
+                    </p>
 
-<section class="grid md:grid-cols-3 gap-4 mt-6">
-    <article class="card bg-base-100 border border-base-300 shadow-sm">
-        <div class="card-body">
-            <p class="text-sm text-base-content/70">Registered seekers</p>
-            <p class="text-3xl font-bold">{{ seeker_count }}</p>
-        </div>
-    </article>
-    <article class="card bg-base-100 border border-base-300 shadow-sm">
-        <div class="card-body">
-            <p class="text-sm text-base-content/70">Registered employers</p>
-            <p class="text-3xl font-bold">{{ employer_count }}</p>
-        </div>
-    </article>
-    <article class="card bg-base-100 border border-base-300 shadow-sm">
-        <div class="card-body">
-            <p class="text-sm text-base-content/70">Available fields</p>
-            <p class="text-3xl font-bold">{{ field_count }}</p>
-        </div>
-    </article>
-</section>
+                    <div class="landing-actions">
+                        <a href="{% url 'account_register' %}" class="landing-primary">Create account</a>
+                        <a href="{% url 'login' %}" class="landing-secondary">Sign in</a>
+                        <a href="{% url 'seeker_list' %}" class="landing-link">Preview directory</a>
+                        <a href="#guided-demo" class="landing-link landing-link-accent">Guided demo</a>
+                    </div>
 
-<section class="grid md:grid-cols-2 gap-4 mt-6">
-    <article class="card bg-base-100 border border-base-300 shadow-sm">
-        <div class="card-body">
-            <h2 class="card-title">For Job Seekers</h2>
-            <p class="text-base-content/70">Submit profile details, degree, and portfolio file into a categorized talent pool.</p>
-            <div class="card-actions justify-end">
-                <a href="{% url 'seeker_register' %}" class="btn btn-primary">Create Seeker Profile</a>
+                    <div class="landing-metrics" aria-label="Platform metrics">
+                        <div>
+                            <strong>{{ seeker_count }}</strong>
+                            <span>public seekers</span>
+                        </div>
+                        <div>
+                            <strong>{{ employer_count }}</strong>
+                            <span>employers</span>
+                        </div>
+                        <div>
+                            <strong>{{ field_count }}</strong>
+                            <span>career fields</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="landing-visual" aria-label="Portfolio matching preview">
+                    <div class="landing-orbit">
+                        <div class="orbit-ring orbit-ring-one"></div>
+                        <div class="orbit-ring orbit-ring-two"></div>
+                        <div class="orbit-dot orbit-dot-one"></div>
+                        <div class="orbit-dot orbit-dot-two"></div>
+                        <div class="orbit-dot orbit-dot-three"></div>
+
+                        <div class="landing-directory-card">
+                            <div class="directory-topline">
+                                <div>
+                                    <span class="directory-label">Employer folder</span>
+                                    <strong>Shortlist workspace</strong>
+                                </div>
+                                <span class="directory-chip">Private</span>
+                            </div>
+
+                            <div class="directory-search">
+                                <span></span>
+                                <p>Search field, skill, location</p>
+                            </div>
+
+                            <div class="directory-rows">
+                                {% for seeker in featured_seekers %}
+                                    <article class="directory-row">
+                                        <span class="directory-avatar">{{ seeker.full_name|make_list|first|upper }}</span>
+                                        <div class="min-w-0">
+                                            <strong>{{ seeker.full_name }}</strong>
+                                            <p>{{ seeker.get_degree_level_display }} / {% if seeker.location %}{{ seeker.location.name }}{% else %}No location set{% endif %} / {{ seeker.get_work_arrangement_display }} / {% for field in seeker.preferred_fields.all %}{{ field.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                                        </div>
+                                        <span class="directory-add">+</span>
+                                    </article>
+                                {% empty %}
+                                    <article class="directory-row">
+                                        <span class="directory-avatar">P</span>
+                                        <div class="min-w-0">
+                                            <strong>Portfolio rows appear here</strong>
+                                            <p>Create seeker profiles to populate the live preview.</p>
+                                        </div>
+                                        <span class="directory-add">+</span>
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </article>
-    <article class="card bg-base-100 border border-base-300 shadow-sm">
-        <div class="card-body">
-            <h2 class="card-title">For Employers</h2>
-            <p class="text-base-content/70">Register company profile, choose business fields, and shortlist promising candidates.</p>
-            <div class="card-actions justify-end">
-                <a href="{% url 'employer_register' %}" class="btn btn-primary">Create Employer Profile</a>
-            </div>
-        </div>
-    </article>
-</section>
+        </section>
 
-<section class="mt-6 card bg-base-100 border border-base-300 shadow-sm">
-    <div class="card-body md:flex-row md:items-center md:justify-between">
-        <div>
-            <h3 class="card-title">Browse candidate portfolios</h3>
-            <p class="text-base-content/70">Filter by degree field and location, then add to private employer shortlist.</p>
-        </div>
-        <a href="{% url 'seeker_list' %}" class="btn btn-outline">Open Portfolio Cards</a>
-    </div>
-</section>
-{% endblock %}
+        <section class="landing-band">
+            <div class="landing-section-head">
+                <h2>Built around the real workflow.</h2>
+                <p>Seekers publish context. Employers filter with intent. Shortlists stay private.</p>
+            </div>
+
+            <div class="workflow-grid">
+                <article class="workflow-card workflow-card-tall">
+                    <span class="workflow-index">01</span>
+                    <h3>Seeker profile</h3>
+                    <p>Portfolio file, degree, location, preferred field, visibility, and download controls live in one profile.</p>
+                </article>
+                <article class="workflow-card">
+                    <span class="workflow-index">02</span>
+                    <h3>Field directory</h3>
+                    <p>Employers browse by business field and keyword instead of posting jobs and waiting.</p>
+                </article>
+                <article class="workflow-card">
+                    <span class="workflow-index">03</span>
+                    <h3>Private folder</h3>
+                    <p>Shortlisted candidates are saved inside the employer workspace with candidate notifications.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="landing-fields">
+            <div class="landing-section-head">
+                <h2>Live field folders</h2>
+                <p>These are pulled from the current app data, so the landing page changes as the directory grows.</p>
+            </div>
+
+            <div class="field-ribbon">
+                {% for field in fields %}
+                    <a href="{% url 'seeker_list' %}?field={{ field.id }}">{{ field.name }}</a>
+                {% empty %}
+                    <span>Fields will appear after setup</span>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section id="guided-demo" class="landing-demo">
+            <div class="landing-section-head">
+                <h2>See the matching flow before signing in.</h2>
+                <p>This demo uses the same product logic without creating records or exposing private portfolio actions.</p>
+            </div>
+
+            <div class="demo-shell">
+                <div class="demo-tabs" role="tablist" aria-label="Guided demo">
+                    <button type="button" class="demo-tab is-active" data-demo-tab="seeker">Seeker flow</button>
+                    <button type="button" class="demo-tab" data-demo-tab="employer">Employer flow</button>
+                </div>
+
+                <div class="demo-panel is-active" data-demo-panel="seeker">
+                    <div class="demo-step"><span>01</span><strong>Create profile</strong><p>Add degree, location, preferred field, and portfolio file.</p></div>
+                    <div class="demo-step"><span>02</span><strong>Publish preview</strong><p>Choose whether the profile is public and whether downloads are allowed.</p></div>
+                    <div class="demo-step"><span>03</span><strong>Receive notification</strong><p>Get notified when an employer saves the portfolio into a private folder.</p></div>
+                </div>
+
+                <div class="demo-panel" data-demo-panel="employer">
+                    <div class="demo-step"><span>01</span><strong>Filter fields</strong><p>Use the market field dropdown, keyword search, and location filter.</p></div>
+                    <div class="demo-step"><span>02</span><strong>Open allowed files</strong><p>Employers can view portfolio files only when the seeker allows downloads.</p></div>
+                    <div class="demo-step"><span>03</span><strong>Shortlist privately</strong><p>Save strong candidates into the company folder without exposing that list publicly.</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-final">
+            <div>
+                <h2>Start with the right role.</h2>
+                <p>Create a seeker or employer account, then complete the matching profile setup.</p>
+            </div>
+            <div class="landing-actions">
+                <a href="{% url 'account_register' %}" class="landing-primary">Create account</a>
+                <a href="{% url 'login' %}" class="landing-secondary">Sign in</a>
+            </div>
+        </section>
+    </main>
+    <script>
+        document.querySelectorAll('[data-demo-tab]').forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                const target = tab.dataset.demoTab;
+                document.querySelectorAll('[data-demo-tab]').forEach(function (item) {
+                    item.classList.toggle('is-active', item.dataset.demoTab === target);
+                });
+                document.querySelectorAll('[data-demo-panel]').forEach(function (panel) {
+                    panel.classList.toggle('is-active', panel.dataset.demoPanel === target);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

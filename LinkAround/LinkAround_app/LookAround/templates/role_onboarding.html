@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Choose Role{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-4xl">
+    <div class="la-page-header">
+        <div>
+            <p class="la-eyebrow">Role onboarding</p>
+            <h1 class="la-title">Choose your LinkAround workspace.</h1>
+            <p class="la-subtitle">Social login accounts need one primary role before profile setup and app workflows are enabled.</p>
+        </div>
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-2">
+        <form method="post" class="la-panel la-panel-body">
+            {% csrf_token %}
+            <input type="hidden" name="role" value="seeker">
+            <span class="la-stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7Z"></path>
+                </svg>
+            </span>
+            <h2 class="la-card-title mt-5">Seeker</h2>
+            <p class="la-muted mt-2">Publish a portfolio profile and receive notifications when employers shortlist you.</p>
+            <button type="submit" class="la-button-primary mt-6 w-full">Continue as seeker</button>
+        </form>
+
+        <form method="post" class="la-panel la-panel-body">
+            {% csrf_token %}
+            <input type="hidden" name="role" value="employer">
+            <span class="la-stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9h1M9 13h1M9 17h1"></path>
+                </svg>
+            </span>
+            <h2 class="la-card-title mt-5">Employer</h2>
+            <p class="la-muted mt-2">Create a company profile, browse portfolio folders, and shortlist candidates privately.</p>
+            <button type="submit" class="la-button-primary mt-6 w-full">Continue as employer</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

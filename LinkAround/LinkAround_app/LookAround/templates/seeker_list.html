@@ -3,68 +3,154 @@
 {% block title %}LinkAround | Portfolio Cards{% endblock %}
 
 {% block content %}
-<section class="card bg-base-100 border border-base-300 shadow-sm">
-    <div class="card-body">
-        <h1 class="card-title text-2xl">Portfolio Database</h1>
-        <form method="get" class="grid gap-3 md:grid-cols-4 mt-2">
-            <input type="text" name="q" value="{{ selected_keyword }}" placeholder="Search by name, degree, bio" class="input input-bordered w-full" />
-            <input type="text" name="location" value="{{ selected_location }}" placeholder="Location" class="input input-bordered w-full" />
-            <select name="field" class="select select-bordered w-full">
-                <option value="">All fields</option>
+<div class="la-page-header">
+    <div>
+        <p class="la-eyebrow">Portfolio screen</p>
+        <h1 class="la-title">
+            {% if selected_field %}
                 {% for field in fields %}
-                    <option value="{{ field.id }}" {% if selected_field == field.id|stringformat:'s' %}selected{% endif %}>{{ field.name }}</option>
+                    {% if selected_field == field.id|stringformat:'s' %}{{ field.name }}{% endif %}
                 {% endfor %}
-            </select>
-            <button type="submit" class="btn btn-primary">Filter</button>
-        </form>
+                portfolios
+            {% else %}
+                All portfolios
+            {% endif %}
+        </h1>
+        <p class="la-subtitle">Press a portfolio row to view details, then add promising candidates to favorites or a company folder.</p>
     </div>
+    <div class="flex gap-2">
+        <a href="{% if is_admin %}{% url 'admin_dashboard' %}{% elif employer_profile %}{% url 'employer_dashboard' employer_profile.id %}{% elif is_employer %}{% url 'employer_register' %}{% elif seeker_profile %}{% url 'seeker_edit' %}{% elif is_seeker %}{% url 'seeker_register' %}{% elif needs_role %}{% url 'choose_role' %}{% else %}{% url 'account_register' %}{% endif %}" class="la-button-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
+            </svg>
+            {% if is_admin %}Admin dashboard{% elif employer_profile %}Open shortlist{% elif is_employer %}Set up company{% elif seeker_profile %}Update portfolio{% else %}Add portfolio{% endif %}
+        </a>
+    </div>
+</div>
+
+<section class="la-panel la-panel-body mb-6">
+    <form method="get" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 xl:items-end">
+        <input type="text" name="q" value="{{ selected_keyword }}" placeholder="Search name, degree, or bio" class="la-input">
+        <select name="location" class="la-select">
+            <option value="">All locations</option>
+            {% regroup regions by category as region_groups %}
+            {% for group in region_groups %}
+                <optgroup label="{{ group.grouper|default:'Other' }}">
+                    {% for region in group.list %}
+                        <option value="{{ region.id }}" {% if selected_location == region.id|stringformat:'s' %}selected{% endif %}>{{ region.name }}</option>
+                    {% endfor %}
+                </optgroup>
+            {% endfor %}
+        </select>
+        <select name="work_arrangement" class="la-select">
+            <option value="">All work modes</option>
+            {% for value, label in work_arrangements %}
+                <option value="{{ value }}" {% if selected_work_arrangement == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="field" class="la-select">
+            <option value="">All fields</option>
+            {% regroup grouped_fields by category as field_groups %}
+            {% for group in field_groups %}
+                <optgroup label="{{ group.grouper|default:'Other' }}">
+                    {% for field in group.list %}
+                        <option value="{{ field.id }}" {% if selected_field == field.id|stringformat:'s' %}selected{% endif %}>{{ field.name }}</option>
+                    {% endfor %}
+                </optgroup>
+            {% endfor %}
+        </select>
+        <select name="sort" class="la-select">
+            <option value="new" {% if selected_sort == 'new' %}selected{% endif %}>Newest first</option>
+            <option value="old" {% if selected_sort == 'old' %}selected{% endif %}>Oldest first</option>
+            <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>Name A–Z</option>
+        </select>
+        <button type="submit" class="la-button-primary">Filter</button>
+    </form>
 </section>
 
-<section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 mt-6">
+<section class="space-y-3">
     {% for seeker in seekers %}
-        <article class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body">
-                <div class="flex justify-between items-start gap-2">
-                    <h2 class="card-title">{{ seeker.full_name }}</h2>
-                    <span class="badge badge-outline">{{ seeker.preferred_field.name }}</span>
-                </div>
-                <p class="text-sm text-base-content/70">{{ seeker.degree }} · {{ seeker.location }}</p>
-                <p class="text-sm">{{ seeker.bio|default:'No bio provided yet.' }}</p>
+        <article class="la-compact-row">
+            <input type="checkbox" class="la-checkbox shrink-0" aria-label="Select {{ seeker.full_name }}">
 
-                <div class="pt-2">
-                    <a href="{{ seeker.portfolio_file.url }}" class="link link-primary text-sm" target="_blank">Download portfolio</a>
-                    <a href="{% url 'seeker_notifications' seeker.id %}" class="link link-secondary text-sm ml-4">View seeker notifications</a>
+            {% if can_view_portfolio_files and seeker.allow_download and seeker.portfolio_file %}
+                <a href="{% url 'portfolio_file' seeker.id %}" target="_blank" rel="noopener noreferrer" class="min-w-0 flex-1">
+                    <span class="la-row-title">{{ seeker.full_name }}</span>
+                    <span class="mt-1 block truncate text-sm text-gray-500">{{ seeker.get_degree_level_display }}{% if seeker.degree %} ({{ seeker.degree }}){% endif %} · {% if seeker.location %}{{ seeker.location.name }}{% else %}No location set{% endif %} · {{ seeker.get_work_arrangement_display }} · {% for field in seeker.preferred_fields.all %}{{ field.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+                </a>
+            {% else %}
+                <div class="min-w-0 flex-1">
+                    <span class="la-row-title">{{ seeker.full_name }}</span>
+                    <span class="mt-1 block truncate text-sm text-gray-500">{{ seeker.get_degree_level_display }}{% if seeker.degree %} ({{ seeker.degree }}){% endif %} · {% if seeker.location %}{{ seeker.location.name }}{% else %}No location set{% endif %} · {{ seeker.get_work_arrangement_display }} · {% for field in seeker.preferred_fields.all %}{{ field.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
                 </div>
+            {% endif %}
 
-                {% if employers %}
-                    <form method="post" action="{% url 'add_to_shortlist' seeker.id %}" class="space-y-2 pt-2">
-                        {% csrf_token %}
-                        <select name="employer_id" class="select select-bordered w-full" required>
-                            <option value="">Select employer profile</option>
-                            {% for employer in employers %}
-                                <option value="{{ employer.id }}" {% if selected_employer_id == employer.id|stringformat:'s' %}selected{% endif %}>{{ employer.company_name }}</option>
-                            {% endfor %}
-                        </select>
-                        <textarea name="notes" class="textarea textarea-bordered w-full" placeholder="Optional shortlist note"></textarea>
-                        <div class="card-actions justify-between">
-                            <button type="submit" class="btn btn-primary btn-sm">Add to shortlist</button>
-                            <span class="text-xs text-base-content/60">Notifies seeker automatically</span>
-                        </div>
-                    </form>
+            <div class="la-row-actions">
+                {% if can_view_portfolio_files and seeker.allow_download and seeker.portfolio_file %}
+                    <a href="{% url 'portfolio_file' seeker.id %}" class="la-icon-btn h-9 w-9" target="_blank" rel="noopener noreferrer" title="View portfolio" aria-label="View portfolio">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7S3.73 16.06 2.46 12Z"></path>
+                        </svg>
+                    </a>
                 {% else %}
-                    <div class="alert alert-warning mt-2 text-sm">
-                        <span>Create an employer profile first to enable shortlisting.</span>
-                    </div>
+                    <span class="la-badge hidden sm:inline-flex">{% if request.user.is_authenticated %}Employer-only{% else %}Login required{% endif %}</span>
+                {% endif %}
+
+                {% if can_act_as_employer and employer_profile %}
+                    <form method="post" action="{% url 'add_to_shortlist' seeker.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="employer_id" value="{{ employer_profile.id }}">
+                        <button type="submit" class="la-icon-btn h-9 w-9" title="Save to shortlist folder" aria-label="Save to shortlist folder">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                            </svg>
+                        </button>
+                    </form>
+                {% endif %}
+
+                {% if request.user.is_authenticated and seeker_profile and seeker_profile.id == seeker.id %}
+                    <a href="{% url 'seeker_edit' %}" class="la-icon-btn h-9 w-9" title="Edit details" aria-label="Edit details">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16.86 4.49 2.65 2.65M5 19l4.2-.7L19.5 8a1.87 1.87 0 0 0-2.65-2.65L6.55 15.65 5 19Z"></path>
+                        </svg>
+                    </a>
+                {% endif %}
+
+                <button type="button" class="la-icon-btn h-9 w-9" title="Details" aria-label="Details" data-row-details-toggle="details-{{ seeker.id }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5h.01M12 12h.01M12 19h.01"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="details-{{ seeker.id }}" class="hidden basis-full la-subsurface text-sm leading-6 text-gray-600">
+                <strong class="block text-gray-900">Portfolio summary</strong>
+                {% if can_view_portfolio_files or request.user.is_authenticated and seeker_profile and seeker_profile.id == seeker.id %}
+                    <span class="mt-1 block">{{ seeker.bio|default:'No bio added yet.' }}</span>
+                {% else %}
+                    <span class="mt-1 block">Sign in as an employer to view full portfolio notes and files.</span>
+                {% endif %}
+                {% if not can_view_portfolio_files %}
+                    <span class="mt-2 block text-xs font-semibold text-brand-500">Create or sign in as an employer to access allowed portfolio files.</span>
                 {% endif %}
             </div>
         </article>
     {% empty %}
-        <article class="card bg-base-100 border border-base-300 shadow-sm md:col-span-2 xl:col-span-3">
-            <div class="card-body">
-                <h2 class="card-title">No seekers found</h2>
-                <p>Try adjusting the filters or ask seekers to register their portfolio profiles.</p>
-            </div>
+        <article class="la-empty">
+            <h2 class="la-card-title">No portfolios found</h2>
+            <p class="la-muted mt-2">Try clearing filters or searching another field, keyword, or location.</p>
         </article>
     {% endfor %}
 </section>
+
+{% include 'partials/_pagination.html' %}
+
+<script>
+    document.querySelectorAll('[data-row-details-toggle]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const target = document.getElementById(button.dataset.rowDetailsToggle);
+            if (target) target.classList.toggle('hidden');
+        });
+    });
+</script>
 {% endblock %}

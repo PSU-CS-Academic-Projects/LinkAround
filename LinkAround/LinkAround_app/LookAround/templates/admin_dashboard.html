@@ -1,0 +1,240 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="la-page-header">
+    <div>
+        <p class="la-eyebrow">Admin screen</p>
+        <h1 class="la-title">Admin dashboard</h1>
+        <p class="la-subtitle">Review users, seeker profiles, employer profiles, and platform activity without leaving LinkAround.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+        <a href="{% url 'seeker_list' %}" class="la-button-secondary">Review directory</a>
+        {% if can_use_django_admin %}
+            <a href="{% url 'admin:index' %}" class="la-button-primary">Django admin</a>
+        {% endif %}
+    </div>
+</div>
+
+<section class="mb-6 grid gap-6 md:grid-cols-3 xl:grid-cols-6">
+    <article class="la-metric-card la-tile-icy">
+        <p class="mt-1 text-sm text-gray-500">Users</p>
+        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ user_count }}</p>
+    </article>
+    <article class="la-metric-card la-tile-lavender">
+        <p class="mt-1 text-sm text-gray-500">Seekers</p>
+        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ seeker_count }}</p>
+    </article>
+    <article class="la-metric-card la-tile-yellow">
+        <p class="mt-1 text-sm text-gray-500">Employers</p>
+        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ employer_count }}</p>
+    </article>
+    <article class="la-metric-card la-tile-orange">
+        <p class="mt-1 text-sm text-gray-500">Public portfolios</p>
+        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ public_seeker_count }}</p>
+    </article>
+    <article class="la-metric-card">
+        <p class="mt-1 text-sm text-gray-500">Shortlists</p>
+        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ shortlist_count }}</p>
+    </article>
+    <article class="la-metric-card">
+        <p class="mt-1 text-sm text-gray-500">Activity</p>
+        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ activity_count }}</p>
+    </article>
+</section>
+
+<section class="la-panel la-panel-body mb-6">
+    <form method="get" action="{% url 'admin_dashboard' %}" class="flex flex-col gap-3 md:flex-row md:items-end">
+        <div class="flex-1">
+            <label for="admin-search" class="mb-2 block text-sm font-medium text-gray-700">Search admin records</label>
+            <input id="admin-search" type="search" name="q" value="{{ admin_query }}" class="la-input" placeholder="Username, company, seeker, email, field, location, activity">
+        </div>
+        <button type="submit" class="la-button-primary">Search</button>
+        {% if admin_query %}
+            <a href="{% url 'admin_dashboard' %}" class="la-button-secondary">Clear</a>
+        {% endif %}
+    </form>
+</section>
+
+<section id="users" class="la-panel mb-6">
+    <div class="la-panel-body border-b border-gray-100">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="la-eyebrow">Accounts</p>
+                <h2 class="la-card-title mt-1">Users</h2>
+            </div>
+            <span class="la-muted">Page {{ user_page_obj.number }} of {{ user_page_obj.paginator.num_pages }}</span>
+        </div>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for user_row in user_page_obj %}
+            <article class="la-compact-row">
+                <div class="min-w-0 flex-1">
+                    <span class="la-row-title">{{ user_row.username }}</span>
+                    <span class="mt-1 block truncate text-sm text-gray-500">{{ user_row.email|default:'No email' }} · {% if user_row.is_staff %}Staff{% else %}Non-staff{% endif %}{% if user_row.is_superuser %} · Superuser{% endif %}</span>
+                    <span class="mt-1 block text-sm text-gray-500">
+                        {% for group in user_row.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% empty %}No role group{% endfor %}
+                    </span>
+                </div>
+                <div class="la-row-actions">
+                    {% if can_use_django_admin %}
+                        <a href="{% url 'admin:auth_user_change' user_row.id %}" class="la-button-secondary py-2">Edit in Django admin</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <article class="la-empty">
+                <h3 class="la-card-title">No users found</h3>
+                <p class="la-muted mt-2">Try a different search term.</p>
+            </article>
+        {% endfor %}
+    </div>
+    <div class="la-panel-body flex justify-between border-t border-gray-100">
+        {% if user_page_obj.has_previous %}
+            <a href="?q={{ admin_query|urlencode }}&users_page={{ user_page_obj.previous_page_number }}#users" class="la-button-secondary">Previous</a>
+        {% else %}
+            <span></span>
+        {% endif %}
+        {% if user_page_obj.has_next %}
+            <a href="?q={{ admin_query|urlencode }}&users_page={{ user_page_obj.next_page_number }}#users" class="la-button-secondary">Next</a>
+        {% endif %}
+    </div>
+</section>
+
+<section id="seekers" class="la-panel mb-6">
+    <div class="la-panel-body border-b border-gray-100">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="la-eyebrow">Profiles</p>
+                <h2 class="la-card-title mt-1">Seekers</h2>
+            </div>
+            <span class="la-muted">Page {{ seeker_page_obj.number }} of {{ seeker_page_obj.paginator.num_pages }}</span>
+        </div>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for seeker in seeker_page_obj %}
+            <article class="la-compact-row">
+                <div class="min-w-0 flex-1">
+                    <span class="la-row-title">{{ seeker.full_name }}</span>
+                    <span class="mt-1 block truncate text-sm text-gray-500">{{ seeker.email }} · {% if seeker.location %}{{ seeker.location.name }}{% else %}No location{% endif %} · {% if seeker.is_public %}Public{% else %}Private{% endif %}</span>
+                    <span class="mt-1 block text-sm text-gray-500">
+                        {% for field in seeker.preferred_fields.all %}{{ field.name }}{% if not forloop.last %}, {% endif %}{% empty %}No fields{% endfor %}
+                    </span>
+                </div>
+                <div class="la-row-actions">
+                    <a href="{% url 'seeker_list' %}?q={{ seeker.full_name|urlencode }}" class="la-button-secondary py-2">Review</a>
+                    {% if can_use_django_admin %}
+                        <a href="{% url 'admin:LinkAround_main_seekerprofile_change' seeker.id %}" class="la-button-secondary py-2">Edit</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <article class="la-empty">
+                <h3 class="la-card-title">No seekers found</h3>
+                <p class="la-muted mt-2">Try a different search term.</p>
+            </article>
+        {% endfor %}
+    </div>
+    <div class="la-panel-body flex justify-between border-t border-gray-100">
+        {% if seeker_page_obj.has_previous %}
+            <a href="?q={{ admin_query|urlencode }}&seekers_page={{ seeker_page_obj.previous_page_number }}#seekers" class="la-button-secondary">Previous</a>
+        {% else %}
+            <span></span>
+        {% endif %}
+        {% if seeker_page_obj.has_next %}
+            <a href="?q={{ admin_query|urlencode }}&seekers_page={{ seeker_page_obj.next_page_number }}#seekers" class="la-button-secondary">Next</a>
+        {% endif %}
+    </div>
+</section>
+
+<section id="employers" class="la-panel mb-6">
+    <div class="la-panel-body border-b border-gray-100">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="la-eyebrow">Profiles</p>
+                <h2 class="la-card-title mt-1">Employers</h2>
+            </div>
+            <span class="la-muted">Page {{ employer_page_obj.number }} of {{ employer_page_obj.paginator.num_pages }}</span>
+        </div>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for employer in employer_page_obj %}
+            <article class="la-compact-row">
+                <div class="min-w-0 flex-1">
+                    <span class="la-row-title">{{ employer.company_name }}</span>
+                    <span class="mt-1 block truncate text-sm text-gray-500">{{ employer.contact_person }} · {{ employer.email }}{% if employer.location %} · {{ employer.location.name }}{% endif %} · {{ employer.shortlist_count }} saved</span>
+                    <span class="mt-1 block text-sm text-gray-500">
+                        {% for field in employer.business_fields.all %}{{ field.name }}{% if not forloop.last %}, {% endif %}{% empty %}No fields{% endfor %}
+                    </span>
+                </div>
+                <div class="la-row-actions">
+                    <a href="{% url 'seeker_list' %}" class="la-button-secondary py-2">Directory</a>
+                    {% if can_use_django_admin %}
+                        <a href="{% url 'admin:LinkAround_main_employerprofile_change' employer.id %}" class="la-button-secondary py-2">Edit</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <article class="la-empty">
+                <h3 class="la-card-title">No employers found</h3>
+                <p class="la-muted mt-2">Try a different search term.</p>
+            </article>
+        {% endfor %}
+    </div>
+    <div class="la-panel-body flex justify-between border-t border-gray-100">
+        {% if employer_page_obj.has_previous %}
+            <a href="?q={{ admin_query|urlencode }}&employers_page={{ employer_page_obj.previous_page_number }}#employers" class="la-button-secondary">Previous</a>
+        {% else %}
+            <span></span>
+        {% endif %}
+        {% if employer_page_obj.has_next %}
+            <a href="?q={{ admin_query|urlencode }}&employers_page={{ employer_page_obj.next_page_number }}#employers" class="la-button-secondary">Next</a>
+        {% endif %}
+    </div>
+</section>
+
+<section id="activity" class="la-panel">
+    <div class="la-panel-body border-b border-gray-100">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="la-eyebrow">Audit</p>
+                <h2 class="la-card-title mt-1">Recent activity</h2>
+            </div>
+            <span class="la-muted">Page {{ activity_page_obj.number }} of {{ activity_page_obj.paginator.num_pages }}</span>
+        </div>
+    </div>
+    <div class="divide-y divide-gray-100">
+        {% for activity in activity_page_obj %}
+            <article class="la-compact-row">
+                <div class="min-w-0 flex-1">
+                    <span class="la-row-title">{{ activity.label }}</span>
+                    <span class="mt-1 block truncate text-sm text-gray-500">{{ activity.user.username }} · {{ activity.role }} · {{ activity.get_activity_type_display }} · {{ activity.created_at|date:'M d, Y H:i' }}</span>
+                    <span class="mt-1 block truncate text-sm text-gray-500">{{ activity.url }}</span>
+                </div>
+                <div class="la-row-actions">
+                    <a href="{{ activity.url }}" class="la-button-secondary py-2">Open</a>
+                    {% if can_use_django_admin %}
+                        <a href="{% url 'admin:LinkAround_main_recentactivity_change' activity.id %}" class="la-button-secondary py-2">Edit</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <article class="la-empty">
+                <h3 class="la-card-title">No activity found</h3>
+                <p class="la-muted mt-2">Activity appears after users browse, save, or update profiles.</p>
+            </article>
+        {% endfor %}
+    </div>
+    <div class="la-panel-body flex justify-between border-t border-gray-100">
+        {% if activity_page_obj.has_previous %}
+            <a href="?q={{ admin_query|urlencode }}&activities_page={{ activity_page_obj.previous_page_number }}#activity" class="la-button-secondary">Previous</a>
+        {% else %}
+            <span></span>
+        {% endif %}
+        {% if activity_page_obj.has_next %}
+            <a href="?q={{ admin_query|urlencode }}&activities_page={{ activity_page_obj.next_page_number }}#activity" class="la-button-secondary">Next</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

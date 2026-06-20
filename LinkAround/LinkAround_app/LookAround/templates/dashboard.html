@@ -1,0 +1,174 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Dashboard{% endblock %}
+
+{% block content %}
+<div class="la-page-header">
+    <div>
+        <p class="la-eyebrow">
+            {% if is_admin %}Admin screen{% elif is_employer %}Company screen{% else %}Seeker home screen{% endif %}
+        </p>
+        <h1 class="la-title">
+            {% if employer_profile %}
+                Hello {{ employer_profile.company_name }}!
+            {% else %}
+                Hello {{ request.user.username }}!
+            {% endif %}
+        </h1>
+        <p class="la-subtitle">
+            {% if is_employer %}
+                Open field folders, scan related portfolios, and move saved candidates into shortlist folders.
+            {% elif is_seeker %}
+                Manage your portfolio profile, preview directory visibility, and track employer notifications.
+            {% else %}
+                Review platform activity and manage role-based workflows.
+            {% endif %}
+        </p>
+    </div>
+    <div class="flex gap-2">
+        <a href="{% url 'seeker_list' %}" class="la-icon-btn" title="Search portfolio or folder" aria-label="Search portfolio or folder">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+            </svg>
+        </a>
+        <a href="{% if is_admin %}{% url 'admin_dashboard' %}{% elif is_employer %}{% url 'employer_register' %}{% else %}{% url 'seeker_register' %}{% endif %}" class="la-icon-btn" title="{% if is_admin %}Open admin dashboard{% else %}Create portfolio or folder{% endif %}" aria-label="{% if is_admin %}Open admin dashboard{% else %}Create portfolio or folder{% endif %}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
+            </svg>
+        </a>
+    </div>
+</div>
+
+{% if is_admin %}
+<section class="mb-6 grid gap-6 md:grid-cols-4">
+    <article class="la-metric-card la-tile-icy">
+        <p class="mt-1 text-sm text-gray-500">Users</p>
+        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ user_count|default:0 }}</p>
+    </article>
+    <article class="la-metric-card la-tile-lavender">
+        <p class="mt-1 text-sm text-gray-500">Seekers</p>
+        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ seeker_count|default:0 }}</p>
+    </article>
+    <article class="la-metric-card la-tile-yellow">
+        <p class="mt-1 text-sm text-gray-500">Employers</p>
+        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ employer_count|default:0 }}</p>
+    </article>
+    <article class="la-metric-card la-tile-orange">
+        <p class="mt-1 text-sm text-gray-500">Public portfolios</p>
+        <p class="mt-2 text-3xl font-semibold text-gray-900">{{ public_seeker_count|default:0 }}</p>
+    </article>
+</section>
+
+<section class="la-panel mb-6">
+    <div class="la-panel-body flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <p class="la-eyebrow">Admin controls</p>
+            <h2 class="la-card-title mt-1">Platform review workspace</h2>
+            <p class="la-muted mt-2">Review users, profiles, and public portfolio visibility from admin-safe entry points.</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'admin_dashboard' %}" class="la-button-primary">Open admin dashboard</a>
+            {% if can_use_django_admin %}
+                <a href="{% url 'admin:index' %}" class="la-button-secondary">Open Django admin</a>
+            {% endif %}
+            <a href="{% url 'seeker_list' %}" class="la-button-secondary">Review directory</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if is_seeker %}
+<section class="mb-6 grid gap-6 md:grid-cols-3">
+    <article class="la-metric-card la-tile-icy">
+        <span class="la-stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.16V11a6 6 0 1 0-12 0v3.16c0 .54-.21 1.05-.6 1.44L4 17h5m6 0a3 3 0 1 1-6 0m6 0H9"></path>
+            </svg>
+        </span>
+        <p class="mt-5 text-sm text-gray-500">Unread notifications</p>
+        <p class="mt-1 text-3xl font-semibold text-gray-900">{{ unread_notification_count|default:0 }}</p>
+    </article>
+    <article class="la-metric-card md:col-span-2">
+        <p class="la-card-title">Seeker workspace</p>
+        {% if seeker_profile %}
+            <p class="la-muted mt-2">{{ seeker_profile.full_name }} · {% for field in seeker_profile.preferred_fields.all %}{{ field.name }}{% if not forloop.last %}, {% endif %}{% empty %}No field selected{% endfor %} · {% if seeker_profile.location %}{{ seeker_profile.location.name }}{% else %}No location set{% endif %}</p>
+            <div class="mt-5 flex flex-wrap gap-3">
+                <a href="{% url 'seeker_edit' %}" class="la-button-secondary">Edit seeker profile</a>
+                <a href="{% url 'seeker_notifications' seeker_profile.id %}" class="la-button-primary">Open notifications</a>
+            </div>
+        {% else %}
+            <p class="la-muted mt-2">Create your seeker profile before employers can discover your portfolio.</p>
+            <a href="{% url 'seeker_register' %}" class="la-button-primary mt-5">Create seeker profile</a>
+        {% endif %}
+    </article>
+</section>
+{% endif %}
+
+{% if employer_profile %}
+<section class="la-panel mb-6">
+    <div class="la-panel-body border-b border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="la-eyebrow">Your folders</p>
+                <h2 class="la-card-title mt-1">Company shortlist folders</h2>
+            </div>
+            <a href="{% url 'employer_dashboard' employer_profile.id %}" class="la-button-secondary">Open shortlist</a>
+        </div>
+    </div>
+    <div class="custom-scrollbar flex gap-4 overflow-x-auto p-5">
+        <a href="{% url 'employer_dashboard' employer_profile.id %}" class="la-folder-card w-44 shrink-0">
+            <span class="la-folder-thumb">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                </svg>
+            </span>
+            <h3 class="la-row-title">My Shortlist</h3>
+            <p class="mt-1 text-sm text-gray-500">{{ shortlisted_count|default:0 }} candidate{{ shortlisted_count|pluralize }}</p>
+        </a>
+        <a href="{% url 'seeker_list' %}" class="la-folder-card w-44 shrink-0 border-dashed">
+            <span class="la-folder-thumb">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
+                </svg>
+            </span>
+            <h3 class="la-row-title">Browse portfolios</h3>
+            <p class="mt-1 text-sm text-gray-500">Browse portfolios</p>
+        </a>
+    </div>
+</section>
+{% endif %}
+
+<section class="la-panel">
+    <div class="la-panel-body border-b border-gray-100">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="la-eyebrow">Portfolios</p>
+                <h2 class="la-card-title mt-1">Folders by field</h2>
+            </div>
+            <span class="la-muted">{{ fields|length }} fields available</span>
+        </div>
+    </div>
+
+    <div class="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {% for field in fields %}
+            <a href="{% url 'seeker_list' %}?field={{ field.id }}" class="la-folder-card">
+                <span class="la-folder-thumb">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                    </svg>
+                </span>
+                <h3 class="la-row-title">{{ field.name }}</h3>
+                <div class="mt-2 space-y-1 text-sm text-gray-500">
+                    <p>Added Portfolio: {{ field.public_seeker_count|default:0 }}</p>
+                </div>
+                <span class="la-button-secondary mt-auto w-full py-2">View now</span>
+            </a>
+        {% empty %}
+            <div class="la-empty sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                <h3 class="la-card-title">No fields yet</h3>
+                <p class="la-muted mt-2">Default fields will appear after the app initializes.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

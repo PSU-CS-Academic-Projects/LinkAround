@@ -1,3 +1,10 @@
+# --- Production deployment ---
+gunicorn==23.0.0
+whitenoise[brotli]==6.9.0
+dj-database-url==2.3.0
+psycopg[binary]==3.2.4
+
+# --- Application / dev ---
 arrow==1.4.0
 asgiref==3.11.1
 binaryornot==0.6.0
@@ -8,6 +15,7 @@ colorama==0.4.6
 cookiecutter==2.7.1
 Django==6.0.4
 django-browser-reload==1.21.0
+django-allauth[socialaccount]>=65.0
 django-tailwind==4.4.2
 honcho==2.0.0
 idna==3.12

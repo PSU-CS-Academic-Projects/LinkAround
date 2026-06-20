@@ -3,37 +3,200 @@
 {% block title %}LinkAround | Employer Dashboard{% endblock %}
 
 {% block content %}
-<section class="card bg-base-100 border border-base-300 shadow-sm">
-    <div class="card-body md:flex-row md:items-center md:justify-between">
-        <div>
-            <h1 class="card-title text-2xl">{{ employer.company_name }} Shortlist</h1>
-            <p class="text-base-content/70">Private folder of selected seekers for easier navigation.</p>
+<div class="la-page-header">
+    <div>
+        <p class="la-eyebrow">Portfolio screen (company)</p>
+        <h1 class="la-title">{{ employer.company_name }} shortlist</h1>
+        <p class="la-subtitle">Organize saved candidates into folders, then open a folder to review just those portfolios.</p>
+    </div>
+    <a href="{% url 'seeker_list' %}" class="la-button-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
+        </svg>
+        Browse portfolios
+    </a>
+</div>
+
+<section class="mb-6 grid gap-6 md:grid-cols-3">
+    <article class="la-metric-card la-tile-icy">
+        <span class="la-stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+            </svg>
+        </span>
+        <p class="mt-5 text-sm text-gray-500">Saved candidates</p>
+        <p class="mt-1 text-3xl font-semibold text-gray-900">{{ total_saved }}</p>
+    </article>
+    <article class="la-metric-card md:col-span-2">
+        <p class="la-card-title">Company profile</p>
+        <p class="la-muted mt-2">{{ employer.contact_person }} · {% if employer.location %}{{ employer.location.name }} · {% endif %}{{ employer.email }}</p>
+        <a href="{% url 'employer_edit' %}" class="la-button-secondary mt-5">Edit employer profile</a>
+    </article>
+</section>
+
+<section class="la-panel mb-6">
+    <div class="la-panel-body">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="la-eyebrow">Shortlist</p>
+                <h2 class="la-card-title mt-1">Your folders</h2>
+                <p class="la-muted mt-2">Drive-style folders for your saved candidates. Pick a folder to view its contents.</p>
+            </div>
+            <form method="post" action="{% url 'create_folder' employer.id %}" class="flex w-full items-end gap-2 sm:w-auto">
+                {% csrf_token %}
+                <div class="w-full sm:w-56">{{ folder_form.name }}</div>
+                <button type="submit" class="la-button-primary shrink-0" title="Create folder">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
+                    </svg>
+                    New folder
+                </button>
+            </form>
         </div>
-        <a href="{% url 'seeker_list' %}?employer_id={{ employer.id }}" class="btn btn-outline">Browse more seekers</a>
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <a href="?folder=all" class="la-drive-folder {% if selected_folder == 'all' %}la-drive-folder-active{% endif %}">
+                <span class="la-drive-folder-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                    </svg>
+                </span>
+                <span class="min-w-0">
+                    <span class="la-drive-folder-name">All saved</span>
+                    <span class="la-drive-folder-count">{{ total_saved }} candidate{{ total_saved|pluralize }}</span>
+                </span>
+            </a>
+            <a href="?folder=unfiled" class="la-drive-folder {% if selected_folder == 'unfiled' %}la-drive-folder-active{% endif %}">
+                <span class="la-drive-folder-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                    </svg>
+                </span>
+                <span class="min-w-0">
+                    <span class="la-drive-folder-name">Unfiled</span>
+                    <span class="la-drive-folder-count">{{ unfiled_count }} candidate{{ unfiled_count|pluralize }}</span>
+                </span>
+            </a>
+            {% for folder in folders %}
+                <a href="?folder={{ folder.id }}" class="la-drive-folder {% if selected_folder == folder.id|stringformat:'s' %}la-drive-folder-active{% endif %}">
+                    <span class="la-drive-folder-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                        </svg>
+                    </span>
+                    <span class="min-w-0">
+                        <span class="la-drive-folder-name">{{ folder.name }}</span>
+                        <span class="la-drive-folder-count">{{ folder.item_count }} candidate{{ folder.item_count|pluralize }}</span>
+                    </span>
+                </a>
+            {% endfor %}
+        </div>
+
+        {% if active_folder %}
+            <div class="mt-5 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4">
+                <form method="post" action="{% url 'rename_folder' active_folder.id %}" class="flex items-center gap-2">
+                    {% csrf_token %}
+                    <div class="w-48"><input type="text" name="name" value="{{ active_folder.name }}" class="la-input" aria-label="Folder name"></div>
+                    <button type="submit" class="la-button-secondary shrink-0">Rename</button>
+                </form>
+                <form method="post" action="{% url 'delete_folder' active_folder.id %}" onsubmit="return confirm('Delete this folder? Its saved candidates move to Unfiled.');">
+                    {% csrf_token %}
+                    <button type="submit" class="la-button-ghost text-red-600 hover:bg-red-50">Delete folder</button>
+                </form>
+            </div>
+        {% endif %}
     </div>
 </section>
 
-<section class="grid gap-4 md:grid-cols-2 mt-6">
+<section class="space-y-3">
+    <h3 class="la-card-title">
+        {% if selected_folder == 'unfiled' %}Unfiled candidates{% elif active_folder %}{{ active_folder.name }}{% else %}All saved candidates{% endif %}
+    </h3>
     {% for item in shortlists %}
-        <article class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title">{{ item.seeker.full_name }}</h2>
-                <p class="text-sm text-base-content/70">{{ item.seeker.degree }} · {{ item.seeker.location }}</p>
-                <p class="text-sm"><strong>Field:</strong> {{ item.seeker.preferred_field.name }}</p>
-                <p class="text-sm"><strong>Note:</strong> {{ item.notes|default:'No notes yet.' }}</p>
-                <div class="card-actions justify-between pt-2">
-                    <a href="{{ item.seeker.portfolio_file.url }}" target="_blank" class="btn btn-sm btn-primary">Download portfolio</a>
-                    <a href="{% url 'seeker_notifications' item.seeker.id %}" class="btn btn-sm btn-ghost">Open seeker notifications</a>
+        <article class="la-compact-row">
+            <input type="checkbox" class="la-checkbox shrink-0" aria-label="Select {{ item.seeker.full_name }}">
+
+            {% if item.seeker.allow_download and item.seeker.portfolio_file %}
+                <a href="{% url 'portfolio_file' item.seeker.id %}" target="_blank" rel="noopener noreferrer" class="min-w-0 flex-1">
+                    <span class="la-row-title">{{ item.seeker.full_name }}</span>
+                    <span class="mt-1 block truncate text-sm text-gray-500">{{ item.seeker.get_degree_level_display }}{% if item.seeker.degree %} ({{ item.seeker.degree }}){% endif %}{% if item.seeker.location %} · {{ item.seeker.location.name }}{% endif %} · {% for field in item.seeker.preferred_fields.all %}{{ field.name }}{% if not forloop.last %}, {% endif %}{% endfor %} · Saved {{ item.created_at|date:'M d, Y' }}</span>
+                </a>
+            {% else %}
+                <div class="min-w-0 flex-1">
+                    <span class="la-row-title">{{ item.seeker.full_name }}</span>
+                    <span class="mt-1 block truncate text-sm text-gray-500">{{ item.seeker.get_degree_level_display }}{% if item.seeker.degree %} ({{ item.seeker.degree }}){% endif %}{% if item.seeker.location %} · {{ item.seeker.location.name }}{% endif %} · {% for field in item.seeker.preferred_fields.all %}{{ field.name }}{% if not forloop.last %}, {% endif %}{% endfor %} · Private file</span>
                 </div>
+            {% endif %}
+
+            <div class="la-row-actions">
+                {% if item.seeker.allow_download and item.seeker.portfolio_file %}
+                    <a href="{% url 'portfolio_file' item.seeker.id %}" target="_blank" rel="noopener noreferrer" class="la-icon-btn h-9 w-9" title="View portfolio" aria-label="View portfolio">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7S3.73 16.06 2.46 12Z"></path>
+                        </svg>
+                    </a>
+                {% endif %}
+                <form method="post" action="{% url 'move_to_folder' item.id %}" class="shrink-0">
+                    {% csrf_token %}
+                    <select name="folder" class="la-select h-9 py-0 text-sm js-auto-submit" title="Move to folder" aria-label="Move to folder">
+                        <option value="unfiled" {% if not item.folder_id %}selected{% endif %}>Unfiled</option>
+                        {% for folder in folders %}
+                            <option value="{{ folder.id }}" {% if item.folder_id == folder.id %}selected{% endif %}>{{ folder.name }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
             </div>
         </article>
     {% empty %}
-        <article class="card bg-base-100 border border-base-300 shadow-sm md:col-span-2">
-            <div class="card-body">
-                <h2 class="card-title">No shortlisted profiles yet</h2>
-                <p>Go to portfolio cards and add seekers into your private shortlist.</p>
-            </div>
+        <article class="la-empty">
+            <h2 class="la-card-title">{% if active_folder %}This folder is empty{% elif selected_folder == 'unfiled' %}Nothing unfiled{% else %}No shortlisted profiles yet{% endif %}</h2>
+            <p class="la-muted mt-2">Open portfolio cards and add candidates, then move them into folders here.</p>
+            <a href="{% url 'seeker_list' %}" class="la-button-primary mt-5">Browse portfolios</a>
         </article>
     {% endfor %}
 </section>
+
+{% include 'partials/_pagination.html' %}
+
+{% if field_folders %}
+<section class="la-panel mt-8">
+    <div class="la-panel-body border-b border-gray-100">
+        <p class="la-eyebrow">Employer Portal</p>
+        <h2 class="la-card-title mt-1">Covered fields</h2>
+        <p class="la-muted mt-2">Public seekers grouped under each business field your company registered. Separate from your shortlist folders.</p>
+    </div>
+    <div class="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
+        {% for folder in field_folders %}
+            <a href="{% url 'seeker_list' %}?field={{ folder.field.id }}" class="la-folder-card">
+                <span class="la-folder-thumb">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                    </svg>
+                </span>
+                <h3 class="la-row-title">{{ folder.field.name }}</h3>
+                <p class="mt-1 text-sm text-gray-500">{{ folder.count }} public seeker{{ folder.count|pluralize }}</p>
+                {% if folder.preview_seekers %}
+                    <ul class="mt-3 space-y-1 text-sm text-gray-600">
+                        {% for seeker in folder.preview_seekers %}
+                            <li class="truncate">{{ seeker.full_name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="mt-3 text-sm text-gray-400">No public seekers in this field yet.</p>
+                {% endif %}
+                <span class="la-button-secondary mt-auto w-full py-2">Open field</span>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+<script>
+    document.addEventListener('change', function (e) {
+        if (e.target && e.target.matches('.js-auto-submit')) {
+            const form = e.target.form;
+            if (form) form.submit();
+        }
+    });
+</script>
 {% endblock %}

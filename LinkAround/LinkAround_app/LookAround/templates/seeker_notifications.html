@@ -3,38 +3,54 @@
 {% block title %}LinkAround | Seeker Notifications{% endblock %}
 
 {% block content %}
-<section class="card bg-base-100 border border-base-300 shadow-sm">
-    <div class="card-body md:flex-row md:items-center md:justify-between">
-        <div>
-            <h1 class="card-title text-2xl">Notifications for {{ seeker.full_name }}</h1>
-            <p class="text-base-content/70">Updates from employers who shortlisted your portfolio.</p>
-        </div>
-        <a href="{% url 'seeker_list' %}" class="btn btn-outline">Back to portfolio cards</a>
+<div class="la-page-header">
+    <div>
+        <p class="la-eyebrow">Notifications</p>
+        <h1 class="la-title">{{ seeker.full_name }}</h1>
+        <p class="la-subtitle">Updates from employers who saved your portfolio into their private shortlist folders.</p>
     </div>
-</section>
+    <a href="{% url 'seeker_list' %}" class="la-button-secondary">Back to portfolios</a>
+</div>
 
-<section class="space-y-3 mt-6">
+<section class="space-y-3">
     {% for notification in notifications %}
-        <article class="card {% if not notification.is_read %}bg-info/10{% else %}bg-base-100{% endif %} border border-base-300 shadow-sm">
-            <div class="card-body">
-                <p class="text-sm text-base-content/70">{{ notification.created_at }}</p>
-                <p>{{ notification.message }}</p>
-                <p class="text-sm text-base-content/70">Employer: {{ notification.shortlist.employer.company_name }}</p>
+        <article class="la-row-card {% if not notification.is_read %}la-row-unread{% endif %}">
+            <div class="flex flex-col gap-4 p-5 md:flex-row md:items-start md:justify-between">
+                <div class="flex gap-4">
+                    <span class="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-full {% if not notification.is_read %}bg-primary text-primary-content{% else %}bg-gray-100 text-gray-500{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.16V11a6 6 0 1 0-12 0v3.16c0 .54-.21 1.05-.6 1.44L4 17h5m6 0a3 3 0 1 1-6 0m6 0H9"></path>
+                        </svg>
+                    </span>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <p class="la-row-title">{{ notification.shortlist.employer.company_name }}</p>
+                            {% if not notification.is_read %}
+                                <span class="la-badge border-primary/20 bg-primary/10 text-primary">New</span>
+                            {% else %}
+                                <span class="la-badge">Read</span>
+                            {% endif %}
+                        </div>
+                        <p class="mt-2 text-sm leading-6 text-gray-600">{{ notification.message }}</p>
+                        <p class="mt-2 text-xs font-medium text-gray-400">{{ notification.created_at|date:'M d, Y g:i A' }}</p>
+                    </div>
+                </div>
+
                 {% if not notification.is_read %}
                     <form method="post" action="{% url 'mark_notification_read' notification.id %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-primary">Mark as read</button>
+                        <button type="submit" class="la-button-primary whitespace-nowrap">Mark as read</button>
                     </form>
                 {% endif %}
             </div>
         </article>
     {% empty %}
-        <article class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title">No notifications yet</h2>
-                <p>Your updates will appear here when employers shortlist your portfolio.</p>
-            </div>
+        <article class="la-empty">
+            <h2 class="la-card-title">No notifications yet</h2>
+            <p class="la-muted mt-2">Your updates will appear here when employers shortlist your portfolio.</p>
         </article>
     {% endfor %}
 </section>
+
+{% include 'partials/_pagination.html' %}
 {% endblock %}

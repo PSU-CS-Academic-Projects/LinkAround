@@ -1,0 +1,64 @@
+{% extends 'layout.html' %}
+
+{% block title %}LinkAround | Edit Employer Profile{% endblock %}
+
+{% block content %}
+<div class="la-page-header">
+    <div>
+        <p class="la-eyebrow">Employer profile</p>
+        <h1 class="la-title">Edit company profile</h1>
+        <p class="la-subtitle">Update company details and business fields used for portfolio discovery.</p>
+    </div>
+    <a href="{% url 'employer_dashboard' employer.id %}" class="la-button-secondary">Open shortlist</a>
+</div>
+
+<section class="la-panel">
+    <form method="post" class="la-panel-body space-y-6">
+        {% csrf_token %}
+
+        <div class="grid gap-5 md:grid-cols-2">
+            <label>
+                <span class="la-field-label">Company name</span>
+                {{ form.company_name }}
+            </label>
+            <label>
+                <span class="la-field-label">Contact person</span>
+                {{ form.contact_person }}
+            </label>
+            <label>
+                <span class="la-field-label">Email</span>
+                {{ form.email }}
+            </label>
+            <label>
+                <span class="la-field-label">Location</span>
+                {{ form.location }}
+            </label>
+        </div>
+
+        <fieldset class="la-fieldset">
+            <legend class="px-2 text-sm font-semibold text-gray-900">Business fields covered</legend>
+            <div class="la-checkbox-grid mt-3">
+                <div>
+                    {% for checkbox in form.business_fields %}
+                        <label>
+                            {{ checkbox.tag }}
+                            <span>{{ checkbox.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if form.business_fields.errors %}
+                <div class="la-alert la-alert-error mt-4">{{ form.business_fields.errors|striptags }}</div>
+            {% endif %}
+        </fieldset>
+
+        {% if form.errors %}
+            <div class="la-alert la-alert-error">Please review the form fields and try again.</div>
+        {% endif %}
+
+        <div class="flex justify-end">
+            <button type="submit" class="la-button-primary">Save changes</button>
+        </div>
+    </form>
+</section>
+{% endblock %}
